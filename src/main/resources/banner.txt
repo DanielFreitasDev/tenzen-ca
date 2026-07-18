@@ -1,0 +1,10 @@
+
+${AnsiColor.51}████████╗███████╗███╗   ██╗███████╗███████╗███╗   ██╗     ██████╗ █████╗
+${AnsiColor.45}╚══██╔══╝██╔════╝████╗  ██║╚══███╔╝██╔════╝████╗  ██║    ██╔════╝██╔══██╗
+${AnsiColor.39}   ██║   █████╗  ██╔██╗ ██║  ███╔╝ █████╗  ██╔██╗ ██║    ██║     ███████║
+${AnsiColor.33}   ██║   ██╔══╝  ██║╚██╗██║ ███╔╝  ██╔══╝  ██║╚██╗██║    ██║     ██╔══██║
+${AnsiColor.27}   ██║   ███████╗██║ ╚████║███████╗███████╗██║ ╚████║    ╚██████╗██║  ██║
+${AnsiColor.21}   ╚═╝   ╚══════╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═══╝     ╚═════╝╚═╝  ╚═╝${AnsiColor.DEFAULT}
+
+ ${AnsiStyle.BOLD}${application.title} ${application.version}${AnsiStyle.NORMAL} ${AnsiColor.BRIGHT_BLACK}· Spring Boot ${spring-boot.version} · ${application.owner}${AnsiColor.DEFAULT}
+ ${AnsiColor.BRIGHT_RED}AC de testes (estilo ICP-Brasil) - certificados sem valor legal${AnsiColor.DEFAULT}
