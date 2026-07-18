@@ -24,10 +24,6 @@ public enum CertificateProfile {
     NG_PJ_SE_H("ng-pj-se-h", "Selo Eletrônico SE-H", Generation.NEW_GEN, Holder.PJ,
             "SE-H", "202", 2048, 1, 5);
 
-    public enum Generation { LEGACY_RFB, NEW_GEN }
-
-    public enum Holder { PF, PJ }
-
     private final String id;
     private final String label;
     private final Generation generation;
@@ -37,10 +33,9 @@ public enum CertificateProfile {
     private final int keyBits;
     private final int defaultValidityYears;
     private final int maxValidityYears;
-
     CertificateProfile(String id, String label, Generation generation, Holder holder,
-            String typeLabel, String policyBranch, int keyBits, int defaultValidityYears,
-            int maxValidityYears) {
+                       String typeLabel, String policyBranch, int keyBits, int defaultValidityYears,
+                       int maxValidityYears) {
         this.id = id;
         this.label = label;
         this.generation = generation;
@@ -77,12 +72,16 @@ public enum CertificateProfile {
         return holder;
     }
 
-    /** A1, A3, A4, SE-S ou SE-H; compõe o rótulo de OU no DN legado. */
+    /**
+     * A1, A3, A4, SE-S ou SE-H; compõe o rótulo de OU no DN legado.
+     */
     public String typeLabel() {
         return typeLabel;
     }
 
-    /** Ramo do policy OID: 2.16.76.1.2.&lt;branch&gt;.&lt;numero-da-AC&gt;. */
+    /**
+     * Ramo do policy OID: 2.16.76.1.2.&lt;branch&gt;.&lt;numero-da-AC&gt;.
+     */
     public String policyBranch() {
         return policyBranch;
     }
@@ -95,7 +94,9 @@ public enum CertificateProfile {
         return defaultValidityYears;
     }
 
-    /** Teto normativo (Tabela 6 da Res. 212/2025 para a nova geração; PC históricas no legado). */
+    /**
+     * Teto normativo (Tabela 6 da Res. 212/2025 para a nova geração; PC históricas no legado).
+     */
     public int maxValidityYears() {
         return maxValidityYears;
     }
@@ -104,13 +105,21 @@ public enum CertificateProfile {
         return generation == Generation.LEGACY_RFB;
     }
 
-    /** EKU Microsoft Smartcard Logon: opcional e restrito ao e-CPF legado. */
+    /**
+     * EKU Microsoft Smartcard Logon: opcional e restrito ao e-CPF legado.
+     */
     public boolean includeSmartcardLogon() {
         return legacy() && holder == Holder.PF;
     }
 
-    /** Largura do campo órgão emissor/UF nos otherNames .3.1/.3.4 (6 no e-CPF legado, 10 nos demais). */
+    /**
+     * Largura do campo órgão emissor/UF nos otherNames .3.1/.3.4 (6 no e-CPF legado, 10 nos demais).
+     */
     public int rgIssuerWidth() {
         return legacy() && holder == Holder.PF ? 6 : 10;
     }
+
+    public enum Generation {LEGACY_RFB, NEW_GEN}
+
+    public enum Holder {PF, PJ}
 }

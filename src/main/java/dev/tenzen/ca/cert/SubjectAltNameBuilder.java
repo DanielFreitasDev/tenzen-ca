@@ -1,16 +1,13 @@
 package dev.tenzen.ca.cert;
 
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
 
 /**
  * Monta o subjectAltName com os otherNames da ICP-Brasil.
@@ -61,7 +58,7 @@ public final class SubjectAltNameBuilder {
      * NIS(11), RG(15) e órgão emissor/UF ({@code rgIssuerWidth} posições; vazio sem RG).
      */
     static String personBlock(String birthDdmmaaaa, String cpf, String nis, String rg,
-            String rgIssuerUf, int rgIssuerWidth) {
+                              String rgIssuerUf, int rgIssuerWidth) {
         StringBuilder block = new StringBuilder(45 + rgIssuerWidth);
         block.append(Texts.zeroPadLeft(birthDdmmaaaa, 8));
         block.append(Texts.zeroPadLeft(cpf, 11));
@@ -74,7 +71,9 @@ public final class SubjectAltNameBuilder {
         return block.toString();
     }
 
-    /** Título de eleitor (.3.5): inscrição(12), zona(3), seção(4), município/UF(22). */
+    /**
+     * Título de eleitor (.3.5): inscrição(12), zona(3), seção(4), município/UF(22).
+     */
     static String voterBlock(SubjectData data) {
         boolean hasVoter = !Texts.isBlank(data.voterId());
         StringBuilder block = new StringBuilder(41);
@@ -89,7 +88,9 @@ public final class SubjectAltNameBuilder {
         return block.toString();
     }
 
-    /** CNPJ (.3.3): 14 posições; aceita alfanumérico (IN RFB 2.229/2024). */
+    /**
+     * CNPJ (.3.3): 14 posições; aceita alfanumérico (IN RFB 2.229/2024).
+     */
     static String cnpjBlock(String cnpj) {
         String value = cnpj == null ? "" : cnpj.toUpperCase().replaceAll("[^0-9A-Z]", "");
         if (value.length() > 14) {
@@ -99,7 +100,7 @@ public final class SubjectAltNameBuilder {
     }
 
     static GeneralName otherName(ASN1ObjectIdentifier oid, String value) {
-        DERSequence sequence = new DERSequence(new ASN1Encodable[] {
+        DERSequence sequence = new DERSequence(new ASN1Encodable[]{
                 oid,
                 new DERTaggedObject(true, 0,
                         new DEROctetString(value.getBytes(StandardCharsets.US_ASCII))),

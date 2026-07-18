@@ -1,5 +1,18 @@
 package dev.tenzen.ca.ca;
 
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -8,28 +21,6 @@ import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.CRLDistPoint;
-import org.bouncycastle.asn1.x509.CertificatePolicies;
-import org.bouncycastle.asn1.x509.DistributionPoint;
-import org.bouncycastle.asn1.x509.DistributionPointName;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.PolicyInformation;
-import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 /**
  * Gera os certificados da cadeia simulada seguindo o perfil de AC do leiaute:
@@ -39,7 +30,9 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  */
 public final class CaCertificateFactory {
 
-    /** Algoritmo de assinatura de certificados de AC (DOC-ICP-01.01). */
+    /**
+     * Algoritmo de assinatura de certificados de AC (DOC-ICP-01.01).
+     */
     public static final String CA_SIGNATURE_ALGORITHM = "SHA512withRSA";
     public static final int CA_KEY_BITS = 4096;
     public static final int ROOT_VALIDITY_YEARS = 20;
@@ -97,7 +90,7 @@ public final class CaCertificateFactory {
     }
 
     public static X509Certificate newIssuingCertificate(KeyPair issuingKeyPair,
-            X509Certificate rootCert, PrivateKey rootKey, String baseUrl) throws Exception {
+                                                        X509Certificate rootCert, PrivateKey rootKey, String baseUrl) throws Exception {
         ZonedDateTime now = ZonedDateTime.now();
         JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
                 rootCert,
@@ -124,9 +117,11 @@ public final class CaCertificateFactory {
         return sign(builder, rootKey);
     }
 
-    /** CRL DP com dois endereços web distintos, como exige o leiaute. */
+    /**
+     * CRL DP com dois endereços web distintos, como exige o leiaute.
+     */
     public static CRLDistPoint crlDistPoint(String url1, String url2) {
-        DistributionPoint[] points = new DistributionPoint[] {
+        DistributionPoint[] points = new DistributionPoint[]{
                 uriDistPoint(url1),
                 uriDistPoint(url2),
         };
@@ -141,7 +136,7 @@ public final class CaCertificateFactory {
     }
 
     public static PolicyInformation cpsPolicy(org.bouncycastle.asn1.ASN1ObjectIdentifier policyOid,
-            String cpsUrl) {
+                                              String cpsUrl) {
         PolicyQualifierInfo qualifier = new PolicyQualifierInfo(cpsUrl);
         return new PolicyInformation(policyOid,
                 new org.bouncycastle.asn1.DERSequence(qualifier));

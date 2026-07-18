@@ -18,8 +18,8 @@ public class RevocationController {
 
     @PostMapping("/certificados/{id}/revogar")
     public String revoke(@PathVariable Long id,
-            @RequestParam(name = "motivo", defaultValue = "unspecified") String reason,
-            RedirectAttributes redirect) {
+                         @RequestParam(name = "motivo", defaultValue = "unspecified") String reason,
+                         RedirectAttributes redirect) {
         issuanceService.revoke(id, reason);
         redirect.addFlashAttribute("revokedNow", true);
         return "redirect:/certificados/" + id;

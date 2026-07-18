@@ -2,13 +2,17 @@ package dev.tenzen.ca.identity;
 
 import java.util.random.RandomGenerator;
 
-/** Validação, geração e formatação de CPF (11 dígitos, DV módulo 11). */
+/**
+ * Validação, geração e formatação de CPF (11 dígitos, DV módulo 11).
+ */
 public final class Cpf {
 
     private Cpf() {
     }
 
-    /** Remove tudo que não for dígito. */
+    /**
+     * Remove tudo que não for dígito.
+     */
     public static String strip(String value) {
         return value == null ? "" : value.replaceAll("\\D", "");
     }

@@ -13,15 +13,21 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
  */
 public final class DnBuilder {
 
-    /** CNPJ fictício da AR simulada (base 99999999, DV válido) para a OU① do DN legado. */
+    /**
+     * CNPJ fictício da AR simulada (base 99999999, DV válido) para a OU① do DN legado.
+     */
     public static final String AR_CNPJ = "99999999000191";
 
-    /** String oficial do leiaute, reproduzida verbatim (com travessão). */
+    /**
+     * String oficial do leiaute, reproduzida verbatim (com travessão).
+     */
     public static final String RFB_OU = "Secretaria da Receita Federal do Brasil – RFB";
 
     public static final String OU_TESTES = "Tenzen CA de Testes";
 
-    /** CN legado: nome em até 52 posições + ':' + CPF(11); razão em até 49 + ':' + CNPJ(14). */
+    /**
+     * CN legado: nome em até 52 posições + ':' + CPF(11); razão em até 49 + ':' + CNPJ(14).
+     */
     private static final int MAX_PF_NAME = 52;
     private static final int MAX_PJ_NAME = 49;
 

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: page('Cadeia de confiança', ~{:: section})}">
+<html lang="pt-BR" th:replace="~{layout/base :: page('Cadeia de confiança', ~{:: section})}"
+      xmlns:th="http://www.thymeleaf.org">
 <body>
 <section>
     <h1 class="text-2xl font-bold tracking-tight">Cadeia de confiança</h1>
@@ -28,12 +28,13 @@
                 <div>
                     <dt class="text-muted-foreground">Válida até</dt>
                     <dd class="technical text-xs mt-0.5"
-                        th:text="${#dates.format(rootNotAfter, 'dd/MM/yyyy')}">2046</dd>
+                        th:text="${#dates.format(rootNotAfter, 'dd/MM/yyyy')}">2046
+                    </dd>
                 </div>
             </dl>
             <div class="mt-4 flex flex-wrap gap-2">
-                <a th:href="@{/ca/tenzen-root.crt}" class="btn btn-primary h-9">Baixar .crt (DER)</a>
-                <a th:href="@{/ca/tenzen-root.pem}" class="btn btn-outline h-9">Baixar PEM</a>
+                <a class="btn btn-primary h-9" th:href="@{/ca/tenzen-root.crt}">Baixar .crt (DER)</a>
+                <a class="btn btn-outline h-9" th:href="@{/ca/tenzen-root.pem}">Baixar PEM</a>
             </div>
         </div>
 
@@ -50,13 +51,14 @@
                 <div>
                     <dt class="text-muted-foreground">Válida até</dt>
                     <dd class="technical text-xs mt-0.5"
-                        th:text="${#dates.format(issuingNotAfter, 'dd/MM/yyyy')}">2036</dd>
+                        th:text="${#dates.format(issuingNotAfter, 'dd/MM/yyyy')}">2036
+                    </dd>
                 </div>
             </dl>
             <div class="mt-4 flex flex-wrap gap-2">
-                <a th:href="@{/ca/tenzen-issuing.pem}" class="btn btn-outline h-9">Baixar PEM</a>
-                <a th:href="@{/ca/tenzen-chain.pem}" class="btn btn-outline h-9">Cadeia PEM</a>
-                <a th:href="@{/ca/tenzen-chain.p7b}" class="btn btn-outline h-9">Cadeia .p7b</a>
+                <a class="btn btn-outline h-9" th:href="@{/ca/tenzen-issuing.pem}">Baixar PEM</a>
+                <a class="btn btn-outline h-9" th:href="@{/ca/tenzen-chain.pem}">Cadeia PEM</a>
+                <a class="btn btn-outline h-9" th:href="@{/ca/tenzen-chain.p7b}">Cadeia .p7b</a>
             </div>
         </div>
     </div>

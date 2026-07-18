@@ -3,24 +3,8 @@ package dev.tenzen.ca.cert;
 import dev.tenzen.ca.ca.CaCertificateFactory;
 import dev.tenzen.ca.ca.CaMaterialManager;
 import dev.tenzen.ca.config.AppProperties;
-import java.math.BigInteger;
-import java.security.PublicKey;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.CertificatePolicies;
-import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.PolicyInformation;
-import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
@@ -29,6 +13,13 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.stereotype.Component;
+
+import java.math.BigInteger;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Emite o certificado do titular assinado pela Intermediária.
@@ -46,17 +37,24 @@ public class CertificateIssuer {
     private final PolicyOidResolver policyResolver;
 
     public CertificateIssuer(CaMaterialManager caMaterial, AppProperties props,
-            PolicyOidResolver policyResolver) {
+                             PolicyOidResolver policyResolver) {
         this.caMaterial = caMaterial;
         this.props = props;
         this.policyResolver = policyResolver;
     }
 
-    public record ValidityPeriod(Date notBefore, Date notAfter) {
+    private static ExtendedKeyUsage extendedKeyUsage(CertificateProfile profile) {
+        List<KeyPurposeId> purposes = new ArrayList<>();
+        purposes.add(KeyPurposeId.id_kp_clientAuth);
+        purposes.add(KeyPurposeId.id_kp_emailProtection);
+        if (profile.includeSmartcardLogon()) {
+            purposes.add(KeyPurposeId.getInstance(IcpBrasilOids.MS_SMARTCARD_LOGON));
+        }
+        return new ExtendedKeyUsage(purposes.toArray(new KeyPurposeId[0]));
     }
 
     public X509Certificate issue(CertificateProfile profile, SubjectData data,
-            PublicKey subjectKey, ValidityPeriod validity, BigInteger serial) {
+                                 PublicKey subjectKey, ValidityPeriod validity, BigInteger serial) {
         try {
             X509Certificate issuingCert = caMaterial.issuingCertificate();
             // nenhum certificado excede a validade da cadeia
@@ -109,13 +107,6 @@ public class CertificateIssuer {
         }
     }
 
-    private static ExtendedKeyUsage extendedKeyUsage(CertificateProfile profile) {
-        List<KeyPurposeId> purposes = new ArrayList<>();
-        purposes.add(KeyPurposeId.id_kp_clientAuth);
-        purposes.add(KeyPurposeId.id_kp_emailProtection);
-        if (profile.includeSmartcardLogon()) {
-            purposes.add(KeyPurposeId.getInstance(IcpBrasilOids.MS_SMARTCARD_LOGON));
-        }
-        return new ExtendedKeyUsage(purposes.toArray(new KeyPurposeId[0]));
+    public record ValidityPeriod(Date notBefore, Date notAfter) {
     }
 }

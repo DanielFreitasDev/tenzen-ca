@@ -35,7 +35,7 @@ public class IssueController {
 
     @PostMapping("/emitir")
     public String issue(@Valid @ModelAttribute("form") IssueForm form, BindingResult binding,
-            RedirectAttributes redirect, Model model) {
+                        RedirectAttributes redirect, Model model) {
         if (!binding.hasErrors()) {
             form.validate(binding, true);
         }

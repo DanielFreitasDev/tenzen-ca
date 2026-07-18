@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: page('Certificado emitido', ~{:: section})}">
+<html lang="pt-BR" th:replace="~{layout/base :: page('Certificado emitido', ~{:: section})}"
+      xmlns:th="http://www.thymeleaf.org">
 <body>
 <section>
     <div class="max-w-3xl mx-auto">
@@ -8,14 +8,14 @@
             <div class="flex items-start gap-4">
                 <span class="shrink-0 mt-0.5 flex size-12 items-center justify-center rounded-lg"
                       th:classappend="${cert.status.name() == 'REVOKED'} ? 'bg-destructive-soft text-destructive' : 'bg-success-soft text-success'">
-                    <svg th:if="${cert.status.name() != 'REVOKED'}" aria-hidden="true"
-                         class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path data-success-check d="M4.5 12.8l4.6 4.6L19.5 6.6"/>
+                    <svg aria-hidden="true" class="size-7"
+                         fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                         stroke-width="2.2" th:if="${cert.status.name() != 'REVOKED'}" viewBox="0 0 24 24">
+                        <path d="M4.5 12.8l4.6 4.6L19.5 6.6" data-success-check/>
                     </svg>
-                    <svg th:if="${cert.status.name() == 'REVOKED'}" aria-hidden="true"
-                         class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2" stroke-linecap="round">
+                    <svg aria-hidden="true" class="size-7"
+                         fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                         th:if="${cert.status.name() == 'REVOKED'}" viewBox="0 0 24 24">
                         <path d="M6 6l12 12M18 6L6 18"/>
                     </svg>
                 </span>
@@ -28,14 +28,14 @@
                         <strong class="font-medium text-foreground" th:text="${cert.subjectCn}">TITULAR</strong>
                     </p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
-                        <span th:if="${cert.status.name() == 'REVOKED'}" class="badge badge-destructive">
+                        <span class="badge badge-destructive" th:if="${cert.status.name() == 'REVOKED'}">
                             revogado
                         </span>
-                        <span th:if="${cert.status.name() != 'REVOKED'}" class="badge badge-success">
+                        <span class="badge badge-success" th:if="${cert.status.name() != 'REVOKED'}">
                             válido
                         </span>
-                        <span th:if="${cert.labMode}" class="badge badge-warning">laboratório</span>
-                        <span th:if="${cert.source.name() == 'CSR'}" class="badge badge-muted">via CSR</span>
+                        <span class="badge badge-warning" th:if="${cert.labMode}">laboratório</span>
+                        <span class="badge badge-muted" th:if="${cert.source.name() == 'CSR'}">via CSR</span>
                         <span class="badge badge-muted">cadeia de teste</span>
                     </div>
                 </div>
@@ -45,7 +45,8 @@
                 <div data-success-detail>
                     <dt class="text-muted-foreground">Documento</dt>
                     <dd class="technical mt-0.5"
-                        th:text="${#strings.isEmpty(cert.document) ? 'não informado' : cert.document}">000</dd>
+                        th:text="${#strings.isEmpty(cert.document) ? 'não informado' : cert.document}">000
+                    </dd>
                 </div>
                 <div data-success-detail>
                     <dt class="text-muted-foreground">Número de série</dt>
@@ -66,11 +67,11 @@
                     <dt class="text-muted-foreground">Fingerprint SHA-256</dt>
                     <dd class="technical mt-0.5 text-xs break-all" th:text="${cert.fingerprintSha256}">AA</dd>
                 </div>
-                <div th:if="${cert.keyAlias}" data-success-detail>
+                <div data-success-detail th:if="${cert.keyAlias}">
                     <dt class="text-muted-foreground">Alias no .p12</dt>
                     <dd class="technical mt-0.5" th:text="${cert.keyAlias}">certificado</dd>
                 </div>
-                <div th:if="${cert.revokedAt}" class="sm:col-span-2" data-success-detail>
+                <div class="sm:col-span-2" data-success-detail th:if="${cert.revokedAt}">
                     <dt class="text-muted-foreground">Revogação</dt>
                     <dd class="mt-0.5">
                         <span th:text="${@fmt.dateTime(cert.revokedAt)}">01/01</span> ·
@@ -82,34 +83,34 @@
             <div class="mt-6 border-t border-border pt-5">
                 <p class="font-medium text-sm mb-2.5">Downloads</p>
                 <div class="flex flex-wrap gap-2">
-                    <a th:if="${cert.hasPrivateKey()}"
+                    <a class="btn btn-primary h-9"
                        th:href="@{|/certificados/${cert.id}/certificado.p12|}"
-                       class="btn btn-primary h-9">.p12 (chave + cadeia)</a>
-                    <a th:if="${cert.hasPrivateKey()}"
+                       th:if="${cert.hasPrivateKey()}">.p12 (chave + cadeia)</a>
+                    <a class="btn btn-outline h-9"
                        th:href="@{|/certificados/${cert.id}/bundle.pem|}"
-                       class="btn btn-outline h-9">PEM completo</a>
-                    <a th:href="@{|/certificados/${cert.id}/certificado.pem|}"
-                       class="btn btn-outline h-9">Certificado PEM</a>
-                    <a th:href="@{|/certificados/${cert.id}/cadeia-completa.p7b|}"
-                       class="btn btn-outline h-9">Cadeia .p7b</a>
+                       th:if="${cert.hasPrivateKey()}">PEM completo</a>
+                    <a class="btn btn-outline h-9"
+                       th:href="@{|/certificados/${cert.id}/certificado.pem|}">Certificado PEM</a>
+                    <a class="btn btn-outline h-9"
+                       th:href="@{|/certificados/${cert.id}/cadeia-completa.p7b|}">Cadeia .p7b</a>
                 </div>
-                <p th:if="${!cert.hasPrivateKey()}" class="field-hint mt-2">
+                <p class="field-hint mt-2" th:if="${!cert.hasPrivateKey()}">
                     Emitido a partir de CSR: a chave privada é sua, a AC nunca a viu.
                 </p>
-                <p th:if="${profile.typeLabel() == 'A3' or profile.typeLabel() == 'A4' or profile.typeLabel() == 'SE-H'}"
-                   class="field-hint mt-2">
+                <p class="field-hint mt-2"
+                   th:if="${profile.typeLabel() == 'A3' or profile.typeLabel() == 'A4' or profile.typeLabel() == 'SE-H'}">
                     Perfil <span th:text="${profile.typeLabel()}">A3</span>: estrutura em arquivo,
                     sem simulação de token ou HSM.
                 </p>
             </div>
 
-            <div th:if="${cert.status.name() == 'VALID'}" class="mt-5 border-t border-border pt-5">
+            <div class="mt-5 border-t border-border pt-5" th:if="${cert.status.name() == 'VALID'}">
                 <details>
                     <summary class="cursor-pointer text-sm font-medium text-destructive select-none">
                         Revogar este certificado
                     </summary>
-                    <form th:action="@{|/certificados/${cert.id}/revogar|}" method="post"
-                          class="mt-3 flex flex-wrap items-end gap-3">
+                    <form class="mt-3 flex flex-wrap items-end gap-3" method="post"
+                          th:action="@{|/certificados/${cert.id}/revogar|}">
                         <div class="min-w-56">
                             <label class="field-label" for="motivo">Motivo</label>
                             <select class="input h-9" id="motivo" name="motivo">
@@ -120,7 +121,7 @@
                                 <option value="cessationOfOperation">encerramento de uso</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-destructive h-9">Revogar</button>
+                        <button class="btn btn-destructive h-9" type="submit">Revogar</button>
                         <p class="field-hint w-full">A CRL é republicada imediatamente nas duas URLs.</p>
                     </form>
                 </details>
@@ -128,8 +129,8 @@
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-            <a th:href="@{/emitir}" class="btn btn-outline">Emitir outro</a>
-            <a th:href="@{/historico}" class="text-primary underline underline-offset-2">
+            <a class="btn btn-outline" th:href="@{/emitir}">Emitir outro</a>
+            <a class="text-primary underline underline-offset-2" th:href="@{/historico}">
                 Ver histórico completo
             </a>
         </div>

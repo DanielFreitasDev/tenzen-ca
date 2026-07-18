@@ -4,10 +4,6 @@ import dev.tenzen.ca.ca.ChainBundleService;
 import dev.tenzen.ca.cert.CertificateProfile;
 import dev.tenzen.ca.issuance.IssuanceRepository;
 import dev.tenzen.ca.issuance.IssuedCertificate;
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +12,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Página de resultado/detalhe de um certificado emitido + downloads (sempre no-store). */
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+/**
+ * Página de resultado/detalhe de um certificado emitido + downloads (sempre no-store).
+ */
 @Controller
 @Transactional(readOnly = true)
 public class CertificateController {
@@ -27,6 +30,25 @@ public class CertificateController {
     public CertificateController(IssuanceRepository repository, ChainBundleService chainBundle) {
         this.repository = repository;
         this.chainBundle = chainBundle;
+    }
+
+    private static String filename(IssuedCertificate cert, String extension) {
+        String slug = cert.getSubjectCn().toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+        if (slug.isBlank()) {
+            slug = "certificado";
+        }
+        return slug + "-" + cert.getSerialHex().substring(0, 8) + "." + extension;
+    }
+
+    static X509Certificate parse(String pem) {
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) factory.generateCertificate(
+                    new ByteArrayInputStream(pem.getBytes(StandardCharsets.US_ASCII)));
+        } catch (Exception e) {
+            throw new IllegalStateException("Certificado armazenado ilegível", e);
+        }
     }
 
     @GetMapping("/certificados/{id}")
@@ -75,24 +97,5 @@ public class CertificateController {
     private IssuedCertificate find(Long id) {
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(
                 org.springframework.http.HttpStatus.NOT_FOUND, "Certificado não encontrado"));
-    }
-
-    private static String filename(IssuedCertificate cert, String extension) {
-        String slug = cert.getSubjectCn().toLowerCase()
-                .replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
-        if (slug.isBlank()) {
-            slug = "certificado";
-        }
-        return slug + "-" + cert.getSerialHex().substring(0, 8) + "." + extension;
-    }
-
-    static X509Certificate parse(String pem) {
-        try {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            return (X509Certificate) factory.generateCertificate(
-                    new ByteArrayInputStream(pem.getBytes(StandardCharsets.US_ASCII)));
-        } catch (Exception e) {
-            throw new IllegalStateException("Certificado armazenado ilegível", e);
-        }
     }
 }

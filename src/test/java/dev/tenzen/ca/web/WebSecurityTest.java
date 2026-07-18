@@ -1,22 +1,10 @@
 package dev.tenzen.ca.web;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import dev.tenzen.ca.IntegrationTestBase;
 import dev.tenzen.ca.cert.CertificateProfile;
 import dev.tenzen.ca.cert.PemExporter;
 import dev.tenzen.ca.cert.SubjectData;
 import dev.tenzen.ca.issuance.IssuanceService;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
@@ -24,6 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
 class WebSecurityTest extends IntegrationTestBase {
@@ -84,7 +81,7 @@ class WebSecurityTest extends IntegrationTestBase {
 
     @Test
     void paginasPrincipaisRespondem() throws Exception {
-        for (String path : new String[] {"/", "/emitir", "/csr", "/historico", "/cadeia", "/dpc"}) {
+        for (String path : new String[]{"/", "/emitir", "/csr", "/historico", "/cadeia", "/dpc"}) {
             mockMvc.perform(get(path)).andExpect(status().isOk());
         }
     }

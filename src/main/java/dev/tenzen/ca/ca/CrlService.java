@@ -2,14 +2,6 @@ package dev.tenzen.ca.ca;
 
 import dev.tenzen.ca.issuance.IssuanceRepository;
 import dev.tenzen.ca.issuance.IssuedCertificate;
-import java.math.BigInteger;
-import java.security.PrivateKey;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CRLHolder;
@@ -24,6 +16,14 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigInteger;
+import java.security.PrivateKey;
+import java.security.cert.X509CRL;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 
 /**
  * CRLs da cadeia: a da Intermediária lista os titulares revogados (reasonCode por
@@ -51,10 +51,18 @@ public class CrlService implements InitializingBean {
     private volatile Instant rootCrlNextUpdate = Instant.EPOCH;
 
     public CrlService(CaMaterialManager caMaterial, IssuanceRepository issuanceRepository,
-            CrlStateRepository stateRepository) {
+                      CrlStateRepository stateRepository) {
         this.caMaterial = caMaterial;
         this.issuanceRepository = issuanceRepository;
         this.stateRepository = stateRepository;
+    }
+
+    private static byte[] sign(JcaX509v2CRLBuilder builder, PrivateKey key) throws Exception {
+        X509CRLHolder holder = builder.build(new JcaContentSignerBuilder(
+                CaCertificateFactory.CA_SIGNATURE_ALGORITHM)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .build(key));
+        return holder.getEncoded();
     }
 
     @Override
@@ -71,7 +79,9 @@ public class CrlService implements InitializingBean {
         return rootCrlBytes;
     }
 
-    /** Reconstrói a CRL da Intermediária com todos os revogados do histórico. */
+    /**
+     * Reconstrói a CRL da Intermediária com todos os revogados do histórico.
+     */
     @Transactional
     public synchronized void rebuildCaCrl() {
         try {
@@ -107,7 +117,9 @@ public class CrlService implements InitializingBean {
         }
     }
 
-    /** CRL da Raiz (cobre a Intermediária; sempre vazia nesta AC de teste). */
+    /**
+     * CRL da Raiz (cobre a Intermediária; sempre vazia nesta AC de teste).
+     */
     @Transactional
     public synchronized void rebuildRootCrl() {
         try {
@@ -129,7 +141,9 @@ public class CrlService implements InitializingBean {
         }
     }
 
-    /** Renova as CRLs antes de {@code nextUpdate} vencer. */
+    /**
+     * Renova as CRLs antes de {@code nextUpdate} vencer.
+     */
     @Scheduled(fixedRate = 30 * 60 * 1000L)
     public void renewIfNearExpiry() {
         Instant threshold = Instant.now().plus(RENEW_MARGIN);
@@ -148,15 +162,9 @@ public class CrlService implements InitializingBean {
         return number;
     }
 
-    private static byte[] sign(JcaX509v2CRLBuilder builder, PrivateKey key) throws Exception {
-        X509CRLHolder holder = builder.build(new JcaContentSignerBuilder(
-                CaCertificateFactory.CA_SIGNATURE_ALGORITHM)
-                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                .build(key));
-        return holder.getEncoded();
-    }
-
-    /** Versão parseada, para testes e diagnósticos. */
+    /**
+     * Versão parseada, para testes e diagnósticos.
+     */
     public X509CRL caCrlParsed() {
         try {
             return new JcaX509CRLConverter()

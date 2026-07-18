@@ -4,7 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** Contador monotônico do CRLNumber, persistido por emissor ("ca" e "root"). */
+/**
+ * Contador monotônico do CRLNumber, persistido por emissor ("ca" e "root").
+ */
 @Entity
 @Table(name = "crl_state")
 public class CrlState {

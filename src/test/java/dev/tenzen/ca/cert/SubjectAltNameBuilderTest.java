@@ -1,15 +1,16 @@
 package dev.tenzen.ca.cert;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-
-import java.time.LocalDate;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class SubjectAltNameBuilderTest {
 
@@ -121,7 +122,7 @@ class SubjectAltNameBuilderTest {
         ASN1Sequence resp = ASN1Sequence.getInstance(san.getNames()[2].getName());
         assertEquals(IcpBrasilOids.PJ_DADOS_RESPONSAVEL, resp.getObjectAt(0));
         byte[] octets = ASN1OctetString.getInstance(
-                ASN1TaggedObject.getInstance(resp.getObjectAt(1)).getExplicitBaseObject())
+                        ASN1TaggedObject.getInstance(resp.getObjectAt(1)).getExplicitBaseObject())
                 .getOctets();
         assertEquals(55, octets.length);
     }

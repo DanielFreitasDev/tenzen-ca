@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: page('Início', ~{:: section})}">
+<html lang="pt-BR" th:replace="~{layout/base :: page('Início', ~{:: section})}"
+      xmlns:th="http://www.thymeleaf.org">
 <body>
 <section>
     <div class="max-w-2xl">
@@ -16,40 +16,44 @@
     </div>
 
     <div class="mt-8 grid gap-4 sm:grid-cols-2" data-motion-stagger>
-        <a th:href="@{/emitir}" class="card p-5 hover:border-ring transition-colors group">
+        <a class="card p-5 hover:border-ring transition-colors group" th:href="@{/emitir}">
             <h2 class="font-semibold flex items-center gap-2">
                 Emitir certificado
-                <span aria-hidden="true" class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                <span aria-hidden="true"
+                      class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
             </h2>
             <p class="mt-1.5 text-sm text-muted-foreground">
                 e-CPF e e-CNPJ (legado RFB, A1/A3) ou nova geração (PF A3/A4, Selo Eletrônico).
                 Chave gerada na hora, download em .p12 e PEM.
             </p>
         </a>
-        <a th:href="@{/csr}" class="card p-5 hover:border-ring transition-colors group">
+        <a class="card p-5 hover:border-ring transition-colors group" th:href="@{/csr}">
             <h2 class="font-semibold flex items-center gap-2">
                 Assinar CSR
-                <span aria-hidden="true" class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                <span aria-hidden="true"
+                      class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
             </h2>
             <p class="mt-1.5 text-sm text-muted-foreground">
                 Envie um PKCS#10 e receba o certificado sem que a AC veja sua chave privada,
                 como no fluxo real.
             </p>
         </a>
-        <a th:href="@{/historico}" class="card p-5 hover:border-ring transition-colors group">
+        <a class="card p-5 hover:border-ring transition-colors group" th:href="@{/historico}">
             <h2 class="font-semibold flex items-center gap-2">
                 Histórico
-                <span aria-hidden="true" class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                <span aria-hidden="true"
+                      class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
             </h2>
             <p class="mt-1.5 text-sm text-muted-foreground">
                 Tudo que já foi emitido: baixe de novo, consulte os detalhes ou revogue
                 (a CRL é republicada na hora).
             </p>
         </a>
-        <a th:href="@{/cadeia}" class="card p-5 hover:border-ring transition-colors group">
+        <a class="card p-5 hover:border-ring transition-colors group" th:href="@{/cadeia}">
             <h2 class="font-semibold flex items-center gap-2">
                 Cadeia de confiança
-                <span aria-hidden="true" class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                <span aria-hidden="true"
+                      class="text-primary transition-transform group-hover:translate-x-0.5">&rarr;</span>
             </h2>
             <p class="mt-1.5 text-sm text-muted-foreground">
                 Baixe a AC-Raiz de teste e a cadeia completa, com instruções para um

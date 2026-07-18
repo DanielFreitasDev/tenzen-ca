@@ -1,6 +1,11 @@
 package dev.tenzen.ca.ca;
 
 import dev.tenzen.ca.config.AppProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,10 +19,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.HexFormat;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Component;
 
 /**
  * Material criptográfico da AC simulada, em dois keystores separados no data-dir:
@@ -47,6 +48,29 @@ public class CaMaterialManager implements InitializingBean {
     public CaMaterialManager(AppProperties props, CaAnchorRepository anchorRepository) {
         this.props = props;
         this.anchorRepository = anchorRepository;
+    }
+
+    private static KeyStore loadKeystore(Path path, char[] password) throws Exception {
+        KeyStore store = KeyStore.getInstance("PKCS12");
+        try (InputStream in = Files.newInputStream(path)) {
+            store.load(in, password);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Não foi possível abrir " + path + ". Senha incorreta (app.ca.keystore-password"
+                            + " / APP_CA_KEYSTORE_PASSWORD) ou arquivo corrompido.", e);
+        }
+        return store;
+    }
+
+    private static void store(KeyStore store, Path path, char[] password) throws Exception {
+        try (OutputStream out = Files.newOutputStream(path)) {
+            store.store(out, password);
+        }
+    }
+
+    private static String sha256Hex(byte[] data) throws Exception {
+        byte[] digest = MessageDigest.getInstance("SHA-256").digest(data);
+        return HexFormat.ofDelimiter(":").withUpperCase().formatHex(digest);
     }
 
     @Override
@@ -115,38 +139,15 @@ public class CaMaterialManager implements InitializingBean {
 
         KeyStore rootStore = KeyStore.getInstance("PKCS12");
         rootStore.load(null, null);
-        rootStore.setKeyEntry(ROOT_ALIAS, rootKey, password, new Certificate[] {rootCert});
+        rootStore.setKeyEntry(ROOT_ALIAS, rootKey, password, new Certificate[]{rootCert});
         store(rootStore, rootPath, password);
 
         KeyStore issuingStore = KeyStore.getInstance("PKCS12");
         issuingStore.load(null, null);
         issuingStore.setKeyEntry(ISSUING_ALIAS, issuingKey, password,
-                new Certificate[] {issuingCert, rootCert});
+                new Certificate[]{issuingCert, rootCert});
         store(issuingStore, issuingPath, password);
         log.info("Keystores gravados em {} e {}", rootPath, issuingPath);
-    }
-
-    private static KeyStore loadKeystore(Path path, char[] password) throws Exception {
-        KeyStore store = KeyStore.getInstance("PKCS12");
-        try (InputStream in = Files.newInputStream(path)) {
-            store.load(in, password);
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Não foi possível abrir " + path + ". Senha incorreta (app.ca.keystore-password"
-                            + " / APP_CA_KEYSTORE_PASSWORD) ou arquivo corrompido.", e);
-        }
-        return store;
-    }
-
-    private static void store(KeyStore store, Path path, char[] password) throws Exception {
-        try (OutputStream out = Files.newOutputStream(path)) {
-            store.store(out, password);
-        }
-    }
-
-    private static String sha256Hex(byte[] data) throws Exception {
-        byte[] digest = MessageDigest.getInstance("SHA-256").digest(data);
-        return HexFormat.ofDelimiter(":").withUpperCase().formatHex(digest);
     }
 
     public X509Certificate rootCertificate() {
@@ -165,7 +166,9 @@ public class CaMaterialManager implements InitializingBean {
         return issuingKey;
     }
 
-    /** Cadeia na ordem leaf-first esperada em PKCS#12 e P7B: Intermediária, Raiz. */
+    /**
+     * Cadeia na ordem leaf-first esperada em PKCS#12 e P7B: Intermediária, Raiz.
+     */
     public List<X509Certificate> chain() {
         return List.of(issuingCert, rootCert);
     }

@@ -1,12 +1,15 @@
 package dev.tenzen.ca.cert;
 
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+
 import java.io.StringWriter;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
-/** Serialização PEM (certificados, chaves e pacotes) via JcaPEMWriter. */
+/**
+ * Serialização PEM (certificados, chaves e pacotes) via JcaPEMWriter.
+ */
 public final class PemExporter {
 
     private PemExporter() {
@@ -32,9 +35,11 @@ public final class PemExporter {
         return toPem(chain.toArray());
     }
 
-    /** Pacote completo: chave privada (PKCS#8 sem senha), certificado e cadeia. */
+    /**
+     * Pacote completo: chave privada (PKCS#8 sem senha), certificado e cadeia.
+     */
     public static String bundlePem(PrivateKey key, X509Certificate certificate,
-            List<X509Certificate> caChain) {
+                                   List<X509Certificate> caChain) {
         Object[] objects = new Object[2 + caChain.size()];
         objects[0] = key;
         objects[1] = certificate;

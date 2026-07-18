@@ -6,12 +6,15 @@ import dev.tenzen.ca.identity.Cnpj;
 import dev.tenzen.ca.identity.Cpf;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.validation.Errors;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import org.springframework.validation.Errors;
 
-/** Formulário de emissão. Campos exigidos variam com o perfil; ver {@link #validate}. */
+/**
+ * Formulário de emissão. Campos exigidos variam com o perfil; ver {@link #validate}.
+ */
 public class IssueForm {
 
     private static final DateTimeFormatter BR_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -62,6 +65,29 @@ public class IssueForm {
     @Size(max = 64, message = "Alias longo demais")
     private String alias = "certificado";
 
+    private static void checkDate(Errors errors, String field, String value) {
+        if (parseDate(value) == null && !isBlank(value)) {
+            errors.rejectValue(field, "data.invalida", "Use o formato dd/mm/aaaa");
+        }
+    }
+
+    private static LocalDate parseDate(String value) {
+        if (isBlank(value)) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value.trim(), BR_DATE);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    /* Auxiliares de renderização: estado inicial correto dos templates antes de o JS rodar. */
+
     public CertificateProfile profile() {
         return CertificateProfile.fromId(profileId);
     }
@@ -77,8 +103,6 @@ public class IssueForm {
             return CertificateProfile.RFB_ECPF_A1;
         }
     }
-
-    /* Auxiliares de renderização: estado inicial correto dos templates antes de o JS rodar. */
 
     public boolean pj() {
         return profileOrDefault().holder() == CertificateProfile.Holder.PJ;
@@ -172,12 +196,6 @@ public class IssueForm {
         }
     }
 
-    private static void checkDate(Errors errors, String field, String value) {
-        if (parseDate(value) == null && !isBlank(value)) {
-            errors.rejectValue(field, "data.invalida", "Use o formato dd/mm/aaaa");
-        }
-    }
-
     public SubjectData toSubjectData() {
         return SubjectData.builder()
                 .name(nome)
@@ -207,81 +225,251 @@ public class IssueForm {
                 .build();
     }
 
-    private static LocalDate parseDate(String value) {
-        if (isBlank(value)) {
-            return null;
-        }
-        try {
-            return LocalDate.parse(value.trim(), BR_DATE);
-        } catch (DateTimeParseException e) {
-            return null;
-        }
+    public String getProfileId() {
+        return profileId;
     }
 
-    private static boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    public void setProfileId(String v) {
+        this.profileId = v;
     }
 
-    public String getProfileId() { return profileId; }
-    public void setProfileId(String v) { this.profileId = v; }
-    public String getNome() { return nome; }
-    public void setNome(String v) { this.nome = v; }
-    public String getCpf() { return cpf; }
-    public void setCpf(String v) { this.cpf = v; }
-    public String getNascimento() { return nascimento; }
-    public void setNascimento(String v) { this.nascimento = v; }
-    public String getNis() { return nis; }
-    public void setNis(String v) { this.nis = v; }
-    public String getRg() { return rg; }
-    public void setRg(String v) { this.rg = v; }
-    public String getRgOrgaoUf() { return rgOrgaoUf; }
-    public void setRgOrgaoUf(String v) { this.rgOrgaoUf = v; }
-    public String getTituloEleitor() { return tituloEleitor; }
-    public void setTituloEleitor(String v) { this.tituloEleitor = v; }
-    public String getTituloZona() { return tituloZona; }
-    public void setTituloZona(String v) { this.tituloZona = v; }
-    public String getTituloSecao() { return tituloSecao; }
-    public void setTituloSecao(String v) { this.tituloSecao = v; }
-    public String getCeiNit() { return ceiNit; }
-    public void setCeiNit(String v) { this.ceiNit = v; }
-    public String getRazaoSocial() { return razaoSocial; }
-    public void setRazaoSocial(String v) { this.razaoSocial = v; }
-    public String getCnpj() { return cnpj; }
-    public void setCnpj(String v) { this.cnpj = v; }
-    public String getCei() { return cei; }
-    public void setCei(String v) { this.cei = v; }
-    public String getResponsavelNome() { return responsavelNome; }
-    public void setResponsavelNome(String v) { this.responsavelNome = v; }
-    public String getResponsavelCpf() { return responsavelCpf; }
-    public void setResponsavelCpf(String v) { this.responsavelCpf = v; }
-    public String getResponsavelNascimento() { return responsavelNascimento; }
-    public void setResponsavelNascimento(String v) { this.responsavelNascimento = v; }
-    public String getResponsavelNis() { return responsavelNis; }
-    public void setResponsavelNis(String v) { this.responsavelNis = v; }
-    public String getResponsavelRg() { return responsavelRg; }
-    public void setResponsavelRg(String v) { this.responsavelRg = v; }
-    public String getResponsavelRgOrgaoUf() { return responsavelRgOrgaoUf; }
-    public void setResponsavelRgOrgaoUf(String v) { this.responsavelRgOrgaoUf = v; }
-    public String getCidade() { return cidade; }
-    public void setCidade(String v) { this.cidade = v; }
-    public String getUf() { return uf; }
-    public void setUf(String v) { this.uf = v; }
-    public String getEmail() { return email; }
-    public void setEmail(String v) { this.email = v; }
-    public String getValidationType() { return validationType; }
-    public void setValidationType(String v) { this.validationType = v; }
-    public String getDomain() { return domain; }
-    public void setDomain(String v) { this.domain = v; }
-    public String getValidadeModo() { return validadeModo; }
-    public void setValidadeModo(String v) { this.validadeModo = v; }
-    public Integer getValidadeAnos() { return validadeAnos; }
-    public void setValidadeAnos(Integer v) { this.validadeAnos = v; }
-    public Integer getValidadeDias() { return validadeDias; }
-    public void setValidadeDias(Integer v) { this.validadeDias = v; }
-    public String getSenha() { return senha; }
-    public void setSenha(String v) { this.senha = v; }
-    public String getSenhaConfirma() { return senhaConfirma; }
-    public void setSenhaConfirma(String v) { this.senhaConfirma = v; }
-    public String getAlias() { return alias; }
-    public void setAlias(String v) { this.alias = v; }
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String v) {
+        this.nome = v;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String v) {
+        this.cpf = v;
+    }
+
+    public String getNascimento() {
+        return nascimento;
+    }
+
+    public void setNascimento(String v) {
+        this.nascimento = v;
+    }
+
+    public String getNis() {
+        return nis;
+    }
+
+    public void setNis(String v) {
+        this.nis = v;
+    }
+
+    public String getRg() {
+        return rg;
+    }
+
+    public void setRg(String v) {
+        this.rg = v;
+    }
+
+    public String getRgOrgaoUf() {
+        return rgOrgaoUf;
+    }
+
+    public void setRgOrgaoUf(String v) {
+        this.rgOrgaoUf = v;
+    }
+
+    public String getTituloEleitor() {
+        return tituloEleitor;
+    }
+
+    public void setTituloEleitor(String v) {
+        this.tituloEleitor = v;
+    }
+
+    public String getTituloZona() {
+        return tituloZona;
+    }
+
+    public void setTituloZona(String v) {
+        this.tituloZona = v;
+    }
+
+    public String getTituloSecao() {
+        return tituloSecao;
+    }
+
+    public void setTituloSecao(String v) {
+        this.tituloSecao = v;
+    }
+
+    public String getCeiNit() {
+        return ceiNit;
+    }
+
+    public void setCeiNit(String v) {
+        this.ceiNit = v;
+    }
+
+    public String getRazaoSocial() {
+        return razaoSocial;
+    }
+
+    public void setRazaoSocial(String v) {
+        this.razaoSocial = v;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String v) {
+        this.cnpj = v;
+    }
+
+    public String getCei() {
+        return cei;
+    }
+
+    public void setCei(String v) {
+        this.cei = v;
+    }
+
+    public String getResponsavelNome() {
+        return responsavelNome;
+    }
+
+    public void setResponsavelNome(String v) {
+        this.responsavelNome = v;
+    }
+
+    public String getResponsavelCpf() {
+        return responsavelCpf;
+    }
+
+    public void setResponsavelCpf(String v) {
+        this.responsavelCpf = v;
+    }
+
+    public String getResponsavelNascimento() {
+        return responsavelNascimento;
+    }
+
+    public void setResponsavelNascimento(String v) {
+        this.responsavelNascimento = v;
+    }
+
+    public String getResponsavelNis() {
+        return responsavelNis;
+    }
+
+    public void setResponsavelNis(String v) {
+        this.responsavelNis = v;
+    }
+
+    public String getResponsavelRg() {
+        return responsavelRg;
+    }
+
+    public void setResponsavelRg(String v) {
+        this.responsavelRg = v;
+    }
+
+    public String getResponsavelRgOrgaoUf() {
+        return responsavelRgOrgaoUf;
+    }
+
+    public void setResponsavelRgOrgaoUf(String v) {
+        this.responsavelRgOrgaoUf = v;
+    }
+
+    public String getCidade() {
+        return cidade;
+    }
+
+    public void setCidade(String v) {
+        this.cidade = v;
+    }
+
+    public String getUf() {
+        return uf;
+    }
+
+    public void setUf(String v) {
+        this.uf = v;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String v) {
+        this.email = v;
+    }
+
+    public String getValidationType() {
+        return validationType;
+    }
+
+    public void setValidationType(String v) {
+        this.validationType = v;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String v) {
+        this.domain = v;
+    }
+
+    public String getValidadeModo() {
+        return validadeModo;
+    }
+
+    public void setValidadeModo(String v) {
+        this.validadeModo = v;
+    }
+
+    public Integer getValidadeAnos() {
+        return validadeAnos;
+    }
+
+    public void setValidadeAnos(Integer v) {
+        this.validadeAnos = v;
+    }
+
+    public Integer getValidadeDias() {
+        return validadeDias;
+    }
+
+    public void setValidadeDias(Integer v) {
+        this.validadeDias = v;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String v) {
+        this.senha = v;
+    }
+
+    public String getSenhaConfirma() {
+        return senhaConfirma;
+    }
+
+    public void setSenhaConfirma(String v) {
+        this.senhaConfirma = v;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String v) {
+        this.alias = v;
+    }
 }

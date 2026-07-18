@@ -23,6 +23,13 @@ public class CrlController {
         this.chainBundle = chainBundle;
     }
 
+    private static ResponseEntity<byte[]> crl(byte[] bytes) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.parseMediaType("application/pkix-crl"))
+                .body(bytes);
+    }
+
     @GetMapping({"/crl/tenzen-ca.crl", "/crl2/tenzen-ca.crl"})
     public ResponseEntity<byte[]> caCrl() {
         return crl(crlService.caCrl());
@@ -39,12 +46,5 @@ public class CrlController {
                 .cacheControl(CacheControl.noStore())
                 .contentType(MediaType.parseMediaType("application/pkcs7-mime"))
                 .body(chainBundle.caChainP7b());
-    }
-
-    private static ResponseEntity<byte[]> crl(byte[] bytes) {
-        return ResponseEntity.ok()
-                .cacheControl(CacheControl.noStore())
-                .contentType(MediaType.parseMediaType("application/pkix-crl"))
-                .body(bytes);
     }
 }

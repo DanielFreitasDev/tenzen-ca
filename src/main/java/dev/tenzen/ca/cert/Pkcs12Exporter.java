@@ -7,7 +7,9 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-/** Monta o .p12 do titular com a cadeia completa na ordem leaf-first. */
+/**
+ * Monta o .p12 do titular com a cadeia completa na ordem leaf-first.
+ */
 public final class Pkcs12Exporter {
 
     public static final String DEFAULT_ALIAS = "certificado";
@@ -16,7 +18,7 @@ public final class Pkcs12Exporter {
     }
 
     public static byte[] export(PrivateKey key, X509Certificate certificate,
-            List<X509Certificate> caChain, String alias, char[] password) {
+                                List<X509Certificate> caChain, String alias, char[] password) {
         try {
             Certificate[] chain = new Certificate[1 + caChain.size()];
             chain[0] = certificate;

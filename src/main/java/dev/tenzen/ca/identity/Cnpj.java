@@ -18,7 +18,9 @@ public final class Cnpj {
     private Cnpj() {
     }
 
-    /** Remove máscara, sobe para maiúsculas e mantém apenas {@code [0-9A-Z]}. */
+    /**
+     * Remove máscara, sobe para maiúsculas e mantém apenas {@code [0-9A-Z]}.
+     */
     public static String strip(String value) {
         return value == null ? "" : value.toUpperCase().replaceAll("[^0-9A-Z]", "");
     }

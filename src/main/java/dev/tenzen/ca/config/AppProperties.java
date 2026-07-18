@@ -1,8 +1,9 @@
 package dev.tenzen.ca.config;
 
-import java.nio.file.Path;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
+
+import java.nio.file.Path;
 
 /**
  * Propriedades da aplicação.
@@ -20,6 +21,12 @@ public record AppProperties(
         @DefaultValue Ca ca,
         @DefaultValue Security security) {
 
+    public String baseUrlNoSlash() {
+        return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+    }
+
+    public enum PolicyMode {ICP_FORMAT, PRIVATE_2_25}
+
     public record Ca(
             @DefaultValue("tenzen-dev") String keystorePassword,
             /** icp-format = OID 2.16.76.1.2.* com leaf fictício; private-2.25 = OID derivado de UUID. */
@@ -27,8 +34,6 @@ public record AppProperties(
             /** Algoritmo de assinatura dos certificados de titular (AC assina sempre com SHA-512). */
             @DefaultValue("SHA256withRSA") String subjectSignatureAlgorithm) {
     }
-
-    public enum PolicyMode { ICP_FORMAT, PRIVATE_2_25 }
 
     public record Security(
             @DefaultValue BasicAuth basicAuth) {
@@ -38,9 +43,5 @@ public record AppProperties(
             @DefaultValue("false") boolean enabled,
             @DefaultValue("tenzen") String username,
             @DefaultValue("") String password) {
-    }
-
-    public String baseUrlNoSlash() {
-        return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 }

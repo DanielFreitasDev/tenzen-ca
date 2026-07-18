@@ -11,7 +11,9 @@ public class HomeController {
         return "index";
     }
 
-    /** DPC fictícia apontada pelo qualificador CPS dos certificados. */
+    /**
+     * DPC fictícia apontada pelo qualificador CPS dos certificados.
+     */
     @GetMapping("/dpc")
     public String dpc() {
         return "dpc";

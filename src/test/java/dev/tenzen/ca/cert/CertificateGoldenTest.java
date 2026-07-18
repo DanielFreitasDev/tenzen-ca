@@ -1,22 +1,20 @@
 package dev.tenzen.ca.cert;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import dev.tenzen.ca.IntegrationTestBase;
-import dev.tenzen.ca.ca.CaMaterialManager;
 import dev.tenzen.ca.ca.CaCertificateFactory;
+import dev.tenzen.ca.ca.CaMaterialManager;
 import dev.tenzen.ca.config.AppProperties;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.x509.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.cert.CertPathValidator;
-import java.security.cert.CertificateFactory;
-import java.security.cert.PKIXParameters;
-import java.security.cert.TrustAnchor;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -24,19 +22,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
-import org.bouncycastle.asn1.x509.CRLDistPoint;
-import org.bouncycastle.asn1.x509.CertificatePolicies;
-import org.bouncycastle.asn1.x509.DistributionPointName;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Golden tests ASN.1: emite um certificado por perfil e confere DN, otherNames
@@ -90,6 +77,34 @@ class CertificateGoldenTest extends IntegrationTestBase {
                 .build();
     }
 
+    private static byte[] otherNameValue(X509Certificate cert, String oid) throws Exception {
+        byte[] extension = cert.getExtensionValue("2.5.29.17");
+        assertNotNull(extension, "SAN ausente");
+        ASN1OctetString wrapped = ASN1OctetString.getInstance(extension);
+        GeneralNames san = GeneralNames.getInstance(ASN1Primitive.fromByteArray(wrapped.getOctets()));
+        for (GeneralName name : san.getNames()) {
+            if (name.getTagNo() != GeneralName.otherName) {
+                continue;
+            }
+            ASN1Sequence seq = ASN1Sequence.getInstance(name.getName());
+            if (seq.getObjectAt(0).toString().equals(oid)) {
+                ASN1TaggedObject tagged = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
+                return ASN1OctetString.getInstance(tagged.getExplicitBaseObject()).getOctets();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * RDN serialNumber (2.5.4.5) do DN, ou null se ausente.
+     */
+    private static String dnSerialNumber(X509Certificate cert) {
+        org.bouncycastle.asn1.x500.X500Name dn = org.bouncycastle.asn1.x500.X500Name
+                .getInstance(cert.getSubjectX500Principal().getEncoded());
+        org.bouncycastle.asn1.x500.RDN[] rdns = dn.getRDNs(IcpBrasilOids.DN_SERIAL_NUMBER);
+        return rdns.length == 0 ? null : rdns[0].getFirst().getValue().toString();
+    }
+
     private X509Certificate issue(CertificateProfile profile, SubjectData data) throws Exception {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(profile.keyBits());
@@ -114,34 +129,8 @@ class CertificateGoldenTest extends IntegrationTestBase {
         CertPathValidator.getInstance("PKIX").validate(path, params);
     }
 
-    private static byte[] otherNameValue(X509Certificate cert, String oid) throws Exception {
-        byte[] extension = cert.getExtensionValue("2.5.29.17");
-        assertNotNull(extension, "SAN ausente");
-        ASN1OctetString wrapped = ASN1OctetString.getInstance(extension);
-        GeneralNames san = GeneralNames.getInstance(ASN1Primitive.fromByteArray(wrapped.getOctets()));
-        for (GeneralName name : san.getNames()) {
-            if (name.getTagNo() != GeneralName.otherName) {
-                continue;
-            }
-            ASN1Sequence seq = ASN1Sequence.getInstance(name.getName());
-            if (seq.getObjectAt(0).toString().equals(oid)) {
-                ASN1TaggedObject tagged = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
-                return ASN1OctetString.getInstance(tagged.getExplicitBaseObject()).getOctets();
-            }
-        }
-        return null;
-    }
-
-    /** RDN serialNumber (2.5.4.5) do DN, ou null se ausente. */
-    private static String dnSerialNumber(X509Certificate cert) {
-        org.bouncycastle.asn1.x500.X500Name dn = org.bouncycastle.asn1.x500.X500Name
-                .getInstance(cert.getSubjectX500Principal().getEncoded());
-        org.bouncycastle.asn1.x500.RDN[] rdns = dn.getRDNs(IcpBrasilOids.DN_SERIAL_NUMBER);
-        return rdns.length == 0 ? null : rdns[0].getFirst().getValue().toString();
-    }
-
     private void assertCommonProfile(X509Certificate cert, CertificateProfile profile,
-            String expectedPolicyOid) throws Exception {
+                                     String expectedPolicyOid) throws Exception {
         // keyUsage crítica com DS+NR+KE (leiaute legado; permitidos na nova geração)
         assertTrue(cert.getCriticalExtensionOIDs().contains("2.5.29.15"));
         boolean[] keyUsage = cert.getKeyUsage();

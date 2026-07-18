@@ -3,6 +3,7 @@ package dev.tenzen.ca.ca;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 import java.time.Instant;
 
 /**

@@ -3,7 +3,6 @@ package dev.tenzen.ca.web;
 import dev.tenzen.ca.ca.CaMaterialManager;
 import dev.tenzen.ca.ca.ChainBundleService;
 import dev.tenzen.ca.cert.PemExporter;
-import java.security.cert.X509Certificate;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,7 +11,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-/** Página da cadeia de confiança e downloads da Raiz/Intermediária. */
+import java.security.cert.X509Certificate;
+
+/**
+ * Página da cadeia de confiança e downloads da Raiz/Intermediária.
+ */
 @Controller
 public class CaController {
 
@@ -22,6 +25,14 @@ public class CaController {
     public CaController(CaMaterialManager caMaterial, ChainBundleService chainBundle) {
         this.caMaterial = caMaterial;
         this.chainBundle = chainBundle;
+    }
+
+    static ResponseEntity<byte[]> download(byte[] body, String filename, String contentType) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(body);
     }
 
     @GetMapping("/cadeia")
@@ -63,13 +74,5 @@ public class CaController {
     @GetMapping("/ca/tenzen-chain.p7b")
     public ResponseEntity<byte[]> chainP7b() {
         return download(chainBundle.caChainP7b(), "tenzen-chain.p7b", "application/pkcs7-mime");
-    }
-
-    static ResponseEntity<byte[]> download(byte[] body, String filename, String contentType) {
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .cacheControl(CacheControl.noStore())
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(body);
     }
 }

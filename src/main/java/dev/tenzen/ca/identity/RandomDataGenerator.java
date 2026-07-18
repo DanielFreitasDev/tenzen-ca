@@ -1,12 +1,13 @@
 package dev.tenzen.ca.identity;
 
+import org.springframework.stereotype.Component;
+
 import java.security.SecureRandom;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.random.RandomGenerator;
-import org.springframework.stereotype.Component;
 
 /**
  * Gera dados fictícios plausíveis para preencher o formulário de emissão.
@@ -49,6 +50,13 @@ public class RandomDataGenerator {
             "Joao Pessoa", "Maceio", "Aracaju", "Campinas", "Sobral", "Juazeiro do Norte");
 
     private final RandomGenerator random = new SecureRandom();
+
+    private static String slug(String value) {
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]", "");
+    }
 
     public PersonData person() {
         String first = pick(FIRST_NAMES);
@@ -93,13 +101,6 @@ public class RandomDataGenerator {
         return slug(parts[0]) + "." + slug(parts[parts.length - 1]) + "@exemplo.com.br";
     }
 
-    private static String slug(String value) {
-        return Normalizer.normalize(value, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[^a-z0-9]", "");
-    }
-
     private String digits(int count) {
         StringBuilder sb = new StringBuilder(count);
         for (int i = 0; i < count; i++) {
@@ -113,11 +114,11 @@ public class RandomDataGenerator {
     }
 
     public record PersonData(String name, String cpf, LocalDate birthDate, String rg,
-            String rgIssuerUf, String nis, String voterId, String voterZone,
-            String voterSection, String city, String uf, String email) {
+                             String rgIssuerUf, String nis, String voterId, String voterZone,
+                             String voterSection, String city, String uf, String email) {
     }
 
     public record CompanyData(String razaoSocial, String cnpj, String cei, String city,
-            String uf, String email) {
+                              String uf, String email) {
     }
 }

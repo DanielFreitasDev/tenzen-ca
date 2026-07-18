@@ -2,11 +2,12 @@ package dev.tenzen.ca.cert;
 
 import dev.tenzen.ca.ca.CaMaterialManager;
 import dev.tenzen.ca.config.AppProperties;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.springframework.stereotype.Component;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.springframework.stereotype.Component;
 
 /**
  * Resolve o policy OID do certificado conforme o modo configurado.
@@ -39,7 +40,9 @@ public class PolicyOidResolver {
         };
     }
 
-    /** 2.25.&lt;inteiro de 128 bits derivado (SHA-256) da Root&gt;: estável por instalação. */
+    /**
+     * 2.25.&lt;inteiro de 128 bits derivado (SHA-256) da Root&gt;: estável por instalação.
+     */
     private String rootUuidDecimal() {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")

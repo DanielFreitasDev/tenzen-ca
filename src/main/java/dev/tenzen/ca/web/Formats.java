@@ -1,11 +1,14 @@
 package dev.tenzen.ca.web;
 
+import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import org.springframework.stereotype.Component;
 
-/** Formatação pt-BR usada nos templates via {@code @fmt}. */
+/**
+ * Formatação pt-BR usada nos templates via {@code @fmt}.
+ */
 @Component("fmt")
 public class Formats {
 
@@ -22,7 +25,9 @@ public class Formats {
         return instant == null ? "" : DATE_TIME.format(instant.atZone(ZONE));
     }
 
-    /** Serial em grupos de 4 para leitura (ex.: 4F3A 90C1 ...). */
+    /**
+     * Serial em grupos de 4 para leitura (ex.: 4F3A 90C1 ...).
+     */
     public String serial(String serialHex) {
         if (serialHex == null) {
             return "";

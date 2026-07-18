@@ -4,8 +4,6 @@ import dev.tenzen.ca.cert.CertificateProfile;
 import dev.tenzen.ca.cert.CsrSigner;
 import dev.tenzen.ca.issuance.IssuanceService;
 import jakarta.validation.Valid;
-import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,7 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/** Fluxo secundário: assinar um PKCS#10 do requerente sem custodiar a chave. */
+import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+
+/**
+ * Fluxo secundário: assinar um PKCS#10 do requerente sem custodiar a chave.
+ */
 @Controller
 public class CsrController {
 
@@ -41,9 +44,9 @@ public class CsrController {
 
     @PostMapping("/csr")
     public String sign(@RequestParam(name = "csrPem", required = false) String csrPem,
-            @RequestParam(name = "csrFile", required = false) MultipartFile csrFile,
-            @Valid @ModelAttribute("form") IssueForm form, BindingResult binding,
-            RedirectAttributes redirect, Model model) {
+                       @RequestParam(name = "csrFile", required = false) MultipartFile csrFile,
+                       @Valid @ModelAttribute("form") IssueForm form, BindingResult binding,
+                       RedirectAttributes redirect, Model model) {
         if (!binding.hasErrors()) {
             // sem .p12 no fluxo CSR: a senha não existe no formulário nem é exigida
             form.validate(binding, false);

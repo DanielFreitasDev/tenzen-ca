@@ -1,12 +1,12 @@
 package dev.tenzen.ca.cert;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DnBuilderTest {
 

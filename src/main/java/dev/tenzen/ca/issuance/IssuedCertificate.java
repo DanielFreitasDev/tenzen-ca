@@ -1,16 +1,7 @@
 package dev.tenzen.ca.issuance;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.Instant;
 
 /**
@@ -21,72 +12,51 @@ import java.time.Instant;
 @Table(name = "issued_certificate")
 public class IssuedCertificate {
 
-    public enum Status { VALID, REVOKED }
-
-    public enum Source { FORM, CSR }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(nullable = false, unique = true, length = 40)
     private String serialHex;
-
     @Column(nullable = false, length = 20)
     private String profileId;
-
     @Column(nullable = false, length = 80)
     private String subjectCn;
-
     @Column(length = 20)
     private String document;
-
     @Column(length = 120)
     private String email;
-
     @Column(nullable = false)
     private Instant notBefore;
-
     @Column(nullable = false)
     private Instant notAfter;
-
     @Column(nullable = false)
     private Instant issuedAt;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Status status = Status.VALID;
-
     private Instant revokedAt;
-
     @Column(length = 30)
     private String revocationReason;
-
     private Integer revocationReasonCode;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 6)
     private Source source = Source.FORM;
-
-    /** Emitido no modo "laboratório" (validade fora dos tetos normativos). */
+    /**
+     * Emitido no modo "laboratório" (validade fora dos tetos normativos).
+     */
     @Column(nullable = false)
     private boolean labMode;
-
     @Column(nullable = false, length = 100)
     private String fingerprintSha256;
-
     @Column(length = 64)
     private String keyAlias;
-
     @Lob
     @Basic(fetch = FetchType.LAZY)
     private byte[] p12Bytes;
-
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(length = 1_000_000)
     private String pemBundle;
-
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(length = 100_000)
@@ -96,9 +66,9 @@ public class IssuedCertificate {
     }
 
     public IssuedCertificate(String serialHex, String profileId, String subjectCn,
-            String document, String email, Instant notBefore, Instant notAfter,
-            Source source, boolean labMode, String fingerprintSha256, String keyAlias,
-            byte[] p12Bytes, String pemBundle, String certPem) {
+                             String document, String email, Instant notBefore, Instant notAfter,
+                             Source source, boolean labMode, String fingerprintSha256, String keyAlias,
+                             byte[] p12Bytes, String pemBundle, String certPem) {
         this.serialHex = serialHex;
         this.profileId = profileId;
         this.subjectCn = subjectCn;
@@ -206,4 +176,8 @@ public class IssuedCertificate {
     public boolean hasPrivateKey() {
         return p12Bytes != null;
     }
+
+    public enum Status {VALID, REVOKED}
+
+    public enum Source {FORM, CSR}
 }

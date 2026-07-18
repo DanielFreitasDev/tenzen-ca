@@ -1,36 +1,23 @@
 package dev.tenzen.ca.ca;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import dev.tenzen.ca.IntegrationTestBase;
 import dev.tenzen.ca.cert.CertificateProfile;
 import dev.tenzen.ca.cert.SubjectData;
 import dev.tenzen.ca.issuance.IssuanceService;
 import dev.tenzen.ca.issuance.IssuedCertificate;
-import java.math.BigInteger;
-import java.security.cert.CertPath;
-import java.security.cert.CertPathValidator;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertStore;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CollectionCertStoreParameters;
-import java.security.cert.PKIXParameters;
-import java.security.cert.TrustAnchor;
-import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigInteger;
+import java.security.cert.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class CrlServiceTest extends IntegrationTestBase {
 
@@ -125,7 +112,9 @@ class CrlServiceTest extends IntegrationTestBase {
                 "o caminho do revogado deve reprovar exatamente por revogação");
     }
 
-    /** PKIX completo com revocação por CRL (a da Intermediária cobre o titular; a da Raiz, a Intermediária). */
+    /**
+     * PKIX completo com revocação por CRL (a da Intermediária cobre o titular; a da Raiz, a Intermediária).
+     */
     private void validateWithRevocation(X509Certificate leaf) throws Exception {
         CertificateFactory factory = CertificateFactory.getInstance("X.509");
         CertPath path = factory.generateCertPath(

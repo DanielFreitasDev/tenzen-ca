@@ -1,13 +1,16 @@
 package dev.tenzen.ca.web;
 
 import dev.tenzen.ca.identity.RandomDataGenerator;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Dados fictícios para o formulário de emissão (evita digitar dados pessoais reais). */
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+/**
+ * Dados fictícios para o formulário de emissão (evita digitar dados pessoais reais).
+ */
 @RestController
 public class RandomDataController {
 

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: page('Assinar CSR', ~{:: section})}">
+<html lang="pt-BR" th:replace="~{layout/base :: page('Assinar CSR', ~{:: section})}"
+      xmlns:th="http://www.thymeleaf.org">
 <body>
 <section>
     <h1 class="text-2xl font-bold tracking-tight">Assinar CSR (PKCS#10)</h1>
@@ -19,11 +19,11 @@
         </p>
     </div>
 
-    <form th:action="@{/csr}" th:object="${form}" method="post" enctype="multipart/form-data"
-          class="mt-6 space-y-6" id="issue-form" novalidate>
+    <form class="mt-6 space-y-6" enctype="multipart/form-data" id="issue-form" method="post"
+          novalidate th:action="@{/csr}" th:object="${form}">
 
-        <div th:if="${#fields.hasGlobalErrors()}"
-             class="rounded border border-destructive bg-destructive-soft text-destructive text-sm p-3">
+        <div class="rounded border border-destructive bg-destructive-soft text-destructive text-sm p-3"
+             th:if="${#fields.hasGlobalErrors()}">
             <p th:each="err : ${#fields.globalErrors()}" th:text="${err}">Erro</p>
         </div>
 
@@ -33,26 +33,26 @@
                 <div>
                     <label class="field-label" for="csrPem">CSR em PEM</label>
                     <textarea class="input technical h-40 py-2 resize-y" id="csrPem" name="csrPem"
-                              spellcheck="false"
                               placeholder="-----BEGIN CERTIFICATE REQUEST-----"
+                              spellcheck="false"
                               th:text="${csrPem}"></textarea>
                 </div>
                 <div>
                     <label class="field-label" for="csrFile">ou envie o arquivo .csr</label>
-                    <input class="block text-sm text-muted-foreground file:btn file:btn-outline file:h-9 file:mr-3"
-                           id="csrFile" name="csrFile" type="file" accept=".csr,.pem,.txt">
+                    <input accept=".csr,.pem,.txt"
+                           class="block text-sm text-muted-foreground file:btn file:btn-outline file:h-9 file:mr-3" id="csrFile" name="csrFile" type="file">
                 </div>
             </div>
         </fieldset>
 
         <fieldset class="card p-5">
             <legend class="font-semibold px-1">Perfil</legend>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup"
-                 aria-label="Perfil do certificado">
-                <label th:each="p : ${profiles}" class="relative cursor-pointer">
-                    <input type="radio" th:field="*{profileId}" th:value="${p.id()}"
-                           class="peer sr-only" data-profile-radio
-                           th:attr="data-holder=${p.holder().name()},data-legacy=${p.legacy()},data-max-years=${p.maxValidityYears()},data-label=${p.label()}">
+            <div aria-label="Perfil do certificado" class="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                 role="radiogroup">
+                <label class="relative cursor-pointer" th:each="p : ${profiles}">
+                    <input class="peer sr-only" data-profile-radio th:attr="data-holder=${p.holder().name()},data-legacy=${p.legacy()},data-max-years=${p.maxValidityYears()},data-label=${p.label()}"
+                           th:field="*{profileId}" th:value="${p.id()}"
+                           type="radio">
                     <span class="flex flex-col items-start gap-0.5 rounded border border-border bg-card px-3 py-2.5 text-sm
                                  peer-checked:border-primary peer-checked:bg-accent-soft peer-checked:text-primary
                                  peer-focus-visible:outline-2 peer-focus-visible:outline-ring hover:border-ring transition-colors">
@@ -68,26 +68,26 @@
         </fieldset>
 
         <fieldset class="card p-5" data-fieldset="pf"
-                  th:hidden="${form.pj()}" th:disabled="${form.pj()}">
+                  th:disabled="${form.pj()}" th:hidden="${form.pj()}">
             <legend class="font-semibold px-1">Titular (pessoa física)</legend>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                     <label class="field-label" for="nome">Nome completo</label>
-                    <input class="input" id="nome" th:field="*{nome}" autocomplete="off">
-                    <p class="field-error" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}">e</p>
+                    <input autocomplete="off" class="input" id="nome" th:field="*{nome}">
+                    <p class="field-error" th:errors="*{nome}" th:if="${#fields.hasErrors('nome')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="cpf">CPF</label>
-                    <input class="input technical" id="cpf" th:field="*{cpf}" data-mask="cpf"
-                           inputmode="numeric" autocomplete="off" placeholder="000.000.000-00">
-                    <p class="field-error" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}">e</p>
+                    <input autocomplete="off" class="input technical" data-mask="cpf" id="cpf"
+                           inputmode="numeric" placeholder="000.000.000-00" th:field="*{cpf}">
+                    <p class="field-error" th:errors="*{cpf}" th:if="${#fields.hasErrors('cpf')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="nascimento">Data de nascimento</label>
-                    <input class="input technical" id="nascimento" th:field="*{nascimento}"
-                           inputmode="numeric" autocomplete="off" placeholder="dd/mm/aaaa">
-                    <p class="field-error" th:if="${#fields.hasErrors('nascimento')}"
-                       th:errors="*{nascimento}">e</p>
+                    <input autocomplete="off" class="input technical" id="nascimento"
+                           inputmode="numeric" placeholder="dd/mm/aaaa" th:field="*{nascimento}">
+                    <p class="field-error" th:errors="*{nascimento}"
+                       th:if="${#fields.hasErrors('nascimento')}">e</p>
                 </div>
             </div>
             <p class="field-hint mt-3">
@@ -97,35 +97,35 @@
         </fieldset>
 
         <fieldset class="card p-5" data-fieldset="pj"
-                  th:hidden="${!form.pj()}" th:disabled="${!form.pj()}">
+                  th:disabled="${!form.pj()}" th:hidden="${!form.pj()}">
             <legend class="font-semibold px-1">Titular (pessoa jurídica)</legend>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                     <label class="field-label" for="razaoSocial">Razão social</label>
-                    <input class="input" id="razaoSocial" th:field="*{razaoSocial}" autocomplete="off">
-                    <p class="field-error" th:if="${#fields.hasErrors('razaoSocial')}"
-                       th:errors="*{razaoSocial}">e</p>
+                    <input autocomplete="off" class="input" id="razaoSocial" th:field="*{razaoSocial}">
+                    <p class="field-error" th:errors="*{razaoSocial}"
+                       th:if="${#fields.hasErrors('razaoSocial')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="cnpjField">CNPJ</label>
-                    <input class="input technical" id="cnpjField" th:field="*{cnpj}" data-mask="cnpj"
-                           autocomplete="off" placeholder="00.000.000/0000-00" spellcheck="false"
-                           autocapitalize="characters">
-                    <p class="field-error" th:if="${#fields.hasErrors('cnpj')}" th:errors="*{cnpj}">e</p>
+                    <input autocapitalize="characters" autocomplete="off" class="input technical" data-mask="cnpj"
+                           id="cnpjField" placeholder="00.000.000/0000-00" spellcheck="false"
+                           th:field="*{cnpj}">
+                    <p class="field-error" th:errors="*{cnpj}" th:if="${#fields.hasErrors('cnpj')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="responsavelNome">Responsável</label>
-                    <input class="input" id="responsavelNome" th:field="*{responsavelNome}"
-                           autocomplete="off">
-                    <p class="field-error" th:if="${#fields.hasErrors('responsavelNome')}"
-                       th:errors="*{responsavelNome}">e</p>
+                    <input autocomplete="off" class="input" id="responsavelNome"
+                           th:field="*{responsavelNome}">
+                    <p class="field-error" th:errors="*{responsavelNome}"
+                       th:if="${#fields.hasErrors('responsavelNome')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="responsavelCpf">CPF do responsável</label>
-                    <input class="input technical" id="responsavelCpf" th:field="*{responsavelCpf}"
-                           data-mask="cpf" inputmode="numeric" autocomplete="off">
-                    <p class="field-error" th:if="${#fields.hasErrors('responsavelCpf')}"
-                       th:errors="*{responsavelCpf}">e</p>
+                    <input autocomplete="off" class="input technical" data-mask="cpf"
+                           id="responsavelCpf" inputmode="numeric" th:field="*{responsavelCpf}">
+                    <p class="field-error" th:errors="*{responsavelCpf}"
+                       th:if="${#fields.hasErrors('responsavelCpf')}">e</p>
                 </div>
             </div>
         </fieldset>
@@ -135,27 +135,27 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                     <label class="field-label" for="email">E-mail</label>
-                    <input class="input" id="email" th:field="*{email}" autocomplete="off">
-                    <p class="field-error" th:if="${#fields.hasErrors('email')}"
-                       th:errors="*{email}">e</p>
+                    <input autocomplete="off" class="input" id="email" th:field="*{email}">
+                    <p class="field-error" th:errors="*{email}"
+                       th:if="${#fields.hasErrors('email')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="cidade">Cidade</label>
-                    <input class="input" id="cidade" th:field="*{cidade}" autocomplete="off">
+                    <input autocomplete="off" class="input" id="cidade" th:field="*{cidade}">
                     <p class="field-hint" data-city-hint-pf hidden></p>
                     <p class="field-hint" data-city-hint-pj hidden>Obrigatória no e-CNPJ (DN, campo L).</p>
-                    <p class="field-error" th:if="${#fields.hasErrors('cidade')}"
-                       th:errors="*{cidade}">e</p>
+                    <p class="field-error" th:errors="*{cidade}"
+                       th:if="${#fields.hasErrors('cidade')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="uf">UF</label>
-                    <input class="input" id="uf" th:field="*{uf}" maxlength="2" autocomplete="off">
-                    <p class="field-error" th:if="${#fields.hasErrors('uf')}" th:errors="*{uf}">e</p>
+                    <input autocomplete="off" class="input" id="uf" maxlength="2" th:field="*{uf}">
+                    <p class="field-error" th:errors="*{uf}" th:if="${#fields.hasErrors('uf')}">e</p>
                 </div>
                 <div>
                     <label class="field-label" for="validationType">Método de validação</label>
-                    <select class="input" id="validationType" th:field="*{validationType}"
-                            data-combobox>
+                    <select class="input" data-combobox id="validationType"
+                            th:field="*{validationType}">
                         <option value="videoconferencia">videoconferencia</option>
                         <option value="presencial">presencial</option>
                         <option value="certificado digital">certificado digital</option>
@@ -163,60 +163,60 @@
                 </div>
                 <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                     <label class="field-label" for="domain">Domínio (OU⑤ do e-CPF)</label>
-                    <input class="input" id="domain" th:field="*{domain}" autocomplete="off"
-                           placeholder="deixe vazio para EM BRANCO">
+                    <input autocomplete="off" class="input" id="domain" placeholder="deixe vazio para EM BRANCO"
+                           th:field="*{domain}">
                 </div>
             </div>
         </fieldset>
 
         <fieldset class="card p-5">
             <legend class="font-semibold px-1">Validade</legend>
-            <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Modo de validade">
+            <div aria-label="Modo de validade" class="flex flex-wrap gap-2" role="radiogroup">
                 <label class="cursor-pointer">
-                    <input type="radio" th:field="*{validadeModo}" value="perfil"
-                           class="peer sr-only" data-validade-modo>
+                    <input class="peer sr-only" data-validade-modo th:field="*{validadeModo}"
+                           type="radio" value="perfil">
                     <span class="btn btn-outline h-9 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-accent-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring">
                         Conforme o perfil
                     </span>
                 </label>
                 <label class="cursor-pointer">
-                    <input type="radio" th:field="*{validadeModo}" value="laboratorio"
-                           class="peer sr-only" data-validade-modo>
+                    <input class="peer sr-only" data-validade-modo th:field="*{validadeModo}"
+                           type="radio" value="laboratorio">
                     <span class="btn btn-outline h-9 peer-checked:border-warning peer-checked:text-warning peer-checked:bg-warning-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring">
                         Laboratório
                     </span>
                 </label>
             </div>
             <div class="mt-4" data-validade-panel="perfil">
-                <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Anos de validade">
-                    <label th:each="anos : ${#numbers.sequence(1, 6)}" class="cursor-pointer"
-                           th:attr="data-anos-option=${anos}"
+                <div aria-label="Anos de validade" class="flex flex-wrap gap-2" role="radiogroup">
+                    <label class="cursor-pointer" th:attr="data-anos-option=${anos}"
+                           th:each="anos : ${#numbers.sequence(1, 6)}"
                            th:hidden="${anos > form.maxYears()}">
-                        <input type="radio" th:field="*{validadeAnos}" th:value="${anos}"
-                               class="peer sr-only" th:disabled="${anos > form.maxYears()}">
+                        <input class="peer sr-only" th:disabled="${anos > form.maxYears()}" th:field="*{validadeAnos}"
+                               th:value="${anos}" type="radio">
                         <span class="btn btn-outline h-9 min-w-20 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-accent-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring"
                               th:text="${anos == 1 ? '1 ano' : anos + ' anos'}">1 ano</span>
                     </label>
                 </div>
                 <p class="field-hint" data-validade-teto></p>
-                <p class="field-error" th:if="${#fields.hasErrors('validadeAnos')}"
-                   th:errors="*{validadeAnos}">e</p>
+                <p class="field-error" th:errors="*{validadeAnos}"
+                   th:if="${#fields.hasErrors('validadeAnos')}">e</p>
             </div>
             <div class="mt-4" data-validade-panel="laboratorio" hidden>
                 <label class="field-label" for="validadeDias">Dias de validade</label>
-                <input class="input technical max-w-40" id="validadeDias" th:field="*{validadeDias}"
-                       type="number" min="1" max="7300">
+                <input class="input technical max-w-40" id="validadeDias" max="7300"
+                       min="1" th:field="*{validadeDias}" type="number">
                 <p class="field-hint">
                     <span class="badge badge-warning">fora dos tetos normativos</span>
                 </p>
-                <p class="field-error" th:if="${#fields.hasErrors('validadeDias')}"
-                   th:errors="*{validadeDias}">e</p>
+                <p class="field-error" th:errors="*{validadeDias}"
+                   th:if="${#fields.hasErrors('validadeDias')}">e</p>
             </div>
         </fieldset>
 
         <div class="flex items-center justify-end gap-3">
-            <a th:href="@{/}" class="btn btn-ghost">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Assinar CSR</button>
+            <a class="btn btn-ghost" th:href="@{/}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Assinar CSR</button>
         </div>
     </form>
 </section>
