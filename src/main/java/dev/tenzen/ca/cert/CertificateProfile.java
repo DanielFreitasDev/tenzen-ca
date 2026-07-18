@@ -33,6 +33,7 @@ public enum CertificateProfile {
     private final int keyBits;
     private final int defaultValidityYears;
     private final int maxValidityYears;
+
     CertificateProfile(String id, String label, Generation generation, Holder holder,
                        String typeLabel, String policyBranch, int keyBits, int defaultValidityYears,
                        int maxValidityYears) {

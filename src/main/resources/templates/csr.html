@@ -40,7 +40,8 @@
                 <div>
                     <label class="field-label" for="csrFile">ou envie o arquivo .csr</label>
                     <input accept=".csr,.pem,.txt"
-                           class="block text-sm text-muted-foreground file:btn file:btn-outline file:h-9 file:mr-3" id="csrFile" name="csrFile" type="file">
+                           class="block text-sm text-muted-foreground file:btn file:btn-outline file:h-9 file:mr-3"
+                           id="csrFile" name="csrFile" type="file">
                 </div>
             </div>
         </fieldset>
@@ -50,7 +51,8 @@
             <div aria-label="Perfil do certificado" class="grid grid-cols-2 sm:grid-cols-4 gap-2"
                  role="radiogroup">
                 <label class="relative cursor-pointer" th:each="p : ${profiles}">
-                    <input class="peer sr-only" data-profile-radio th:attr="data-holder=${p.holder().name()},data-legacy=${p.legacy()},data-max-years=${p.maxValidityYears()},data-label=${p.label()}"
+                    <input class="peer sr-only" data-profile-radio
+                           th:attr="data-holder=${p.holder().name()},data-legacy=${p.legacy()},data-max-years=${p.maxValidityYears()},data-label=${p.label()}"
                            th:field="*{profileId}" th:value="${p.id()}"
                            type="radio">
                     <span class="flex flex-col items-start gap-0.5 rounded border border-border bg-card px-3 py-2.5 text-sm

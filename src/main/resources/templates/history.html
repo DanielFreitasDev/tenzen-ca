@@ -69,7 +69,8 @@
                             <summary class="btn btn-ghost h-8 text-xs text-destructive list-none cursor-pointer">
                                 Revogar
                             </summary>
-                            <form class="absolute right-0 z-10 mt-1 w-64 card p-3 shadow-lg space-y-2 text-left" method="post"
+                            <form class="absolute right-0 z-10 mt-1 w-64 card p-3 shadow-lg space-y-2 text-left"
+                                  method="post"
                                   th:action="@{|/certificados/${c.id}/revogar|}">
                                 <label class="field-label" th:for="|motivo-${c.id}|">Motivo</label>
                                 <select class="input h-9" name="motivo" th:id="|motivo-${c.id}|">
