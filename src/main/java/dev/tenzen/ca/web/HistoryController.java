@@ -27,9 +27,7 @@ public class HistoryController {
             certificates = repository.findAllByOrderByIssuedAtDesc();
         } else {
             String term = query.trim();
-            certificates = repository
-                    .findBySubjectCnContainingIgnoreCaseOrDocumentContainingOrSerialHexContainingIgnoreCaseOrderByIssuedAtDesc(
-                            term, term.replaceAll("\\D", ""), term.toLowerCase());
+            certificates = repository.search(term, term.replaceAll("\\D", ""));
         }
         Map<String, String> profileLabels = java.util.Arrays.stream(CertificateProfile.values())
                 .collect(Collectors.toMap(CertificateProfile::id, CertificateProfile::label));

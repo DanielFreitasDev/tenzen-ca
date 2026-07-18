@@ -55,6 +55,19 @@ class CsrSignerTest extends IntegrationTestBase {
     }
 
     @Test
+    void rejeitaCsrComChaveTrocada() throws Exception {
+        // DER íntegro que declara a chave pública de A mas foi assinado com a de B:
+        // exercita exatamente o ramo "assinatura não confere" (não o de parse)
+        KeyPair a = newKeyPair();
+        KeyPair b = newKeyPair();
+        PKCS10CertificationRequest csr = new JcaPKCS10CertificationRequestBuilder(
+                new X500Name("CN=chave trocada"), a.getPublic())
+                .build(new JcaContentSignerBuilder("SHA256withRSA").build(b.getPrivate()));
+        assertThrows(CsrSigner.InvalidCsrException.class,
+                () -> CsrSigner.extractVerifiedPublicKey(PemExporter.toPem(csr)));
+    }
+
+    @Test
     void rejeitaConteudoQueNaoECsr() {
         assertThrows(CsrSigner.InvalidCsrException.class,
                 () -> CsrSigner.extractVerifiedPublicKey("-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----"));

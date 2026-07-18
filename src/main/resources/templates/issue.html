@@ -24,11 +24,10 @@
                 O legado RFB é o que as aplicações consomem hoje (emissão permitida até 02/03/2029);
                 a nova geração segue o DOC-ICP-04 v8.3.
             </p>
-            <div class="space-y-4">
+            <div class="space-y-4" role="radiogroup" aria-label="Perfil do certificado">
                 <div>
                     <p class="field-label" id="lbl-legado">Legado RFB (default)</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup"
-                         aria-labelledby="lbl-legado">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <label th:each="p : ${profiles}" th:if="${p.legacy()}"
                                class="relative cursor-pointer">
                             <input type="radio" th:field="*{profileId}" th:value="${p.id()}"
@@ -46,8 +45,7 @@
                 </div>
                 <div>
                     <p class="field-label" id="lbl-ng">Nova geração (DOC-ICP-04 v8.3)</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup"
-                         aria-labelledby="lbl-ng">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <label th:each="p : ${profiles}" th:unless="${p.legacy()}"
                                class="relative cursor-pointer">
                             <input type="radio" th:field="*{profileId}" th:value="${p.id()}"
@@ -73,7 +71,8 @@
         </fieldset>
 
         <!-- ============ Dados do titular PF ============ -->
-        <fieldset class="card p-5" data-fieldset="pf">
+        <fieldset class="card p-5" data-fieldset="pf"
+                  th:hidden="${form.pj()}" th:disabled="${form.pj()}">
             <legend class="font-semibold px-1">Titular (pessoa física)</legend>
             <div class="flex justify-end -mt-1 mb-2">
                 <button type="button" class="btn btn-outline h-8 text-xs" data-random="pessoa">
@@ -123,22 +122,22 @@
                         <input class="input technical" id="nis" th:field="*{nis}"
                                inputmode="numeric" autocomplete="off">
                     </div>
-                    <div data-legacy-pf>
+                    <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                         <label class="field-label" for="tituloEleitor">Título de eleitor</label>
                         <input class="input technical" id="tituloEleitor" th:field="*{tituloEleitor}"
                                inputmode="numeric" autocomplete="off">
                     </div>
-                    <div data-legacy-pf>
+                    <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                         <label class="field-label" for="tituloZona">Zona</label>
                         <input class="input technical" id="tituloZona" th:field="*{tituloZona}"
                                inputmode="numeric" autocomplete="off">
                     </div>
-                    <div data-legacy-pf>
+                    <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                         <label class="field-label" for="tituloSecao">Seção</label>
                         <input class="input technical" id="tituloSecao" th:field="*{tituloSecao}"
                                inputmode="numeric" autocomplete="off">
                     </div>
-                    <div data-legacy-pf>
+                    <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                         <label class="field-label" for="ceiNit">CEI / NIT</label>
                         <input class="input technical" id="ceiNit" th:field="*{ceiNit}"
                                inputmode="numeric" autocomplete="off">
@@ -148,7 +147,8 @@
         </fieldset>
 
         <!-- ============ Dados do titular PJ ============ -->
-        <fieldset class="card p-5" data-fieldset="pj" hidden>
+        <fieldset class="card p-5" data-fieldset="pj"
+                  th:hidden="${!form.pj()}" th:disabled="${!form.pj()}">
             <legend class="font-semibold px-1">Titular (pessoa jurídica)</legend>
             <div class="flex justify-end -mt-1 mb-2">
                 <button type="button" class="btn btn-outline h-8 text-xs" data-random="empresa">
@@ -262,7 +262,7 @@
                     </select>
                     <p class="field-hint">OU② do DN, como no leiaute.</p>
                 </div>
-                <div data-legacy-pf>
+                <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                     <label class="field-label" for="domain">Domínio (OU⑤ do e-CPF)</label>
                     <input class="input" id="domain" th:field="*{domain}" autocomplete="off"
                            placeholder="deixe vazio para EM BRANCO">
@@ -293,9 +293,10 @@
             <div class="mt-4" data-validade-panel="perfil">
                 <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Anos de validade">
                     <label th:each="anos : ${#numbers.sequence(1, 6)}" class="cursor-pointer"
-                           th:attr="data-anos-option=${anos}">
+                           th:attr="data-anos-option=${anos}"
+                           th:hidden="${anos > form.maxYears()}">
                         <input type="radio" th:field="*{validadeAnos}" th:value="${anos}"
-                               class="peer sr-only">
+                               class="peer sr-only" th:disabled="${anos > form.maxYears()}">
                         <span class="btn btn-outline h-9 min-w-20 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-accent-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring"
                               th:text="${anos == 1 ? '1 ano' : anos + ' anos'}">1 ano</span>
                     </label>

@@ -7,13 +7,6 @@ function selectedProfile(form) {
   return form.querySelector('[data-profile-radio]:checked');
 }
 
-function setFieldsetActive(fieldset, active, animate, other) {
-  if (!fieldset) return;
-  fieldset.disabled = !active; // fieldset desabilitado não entra no submit
-  if (animate && other) return; // swapFieldsets cuida do hidden
-  fieldset.hidden = !active;
-}
-
 function applyProfile(form, { animate = false } = {}) {
   const radio = selectedProfile(form);
   if (!radio) return;

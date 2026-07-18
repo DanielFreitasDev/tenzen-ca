@@ -132,8 +132,16 @@ class CertificateGoldenTest extends IntegrationTestBase {
         return null;
     }
 
-    private void assertCommonProfile(X509Certificate cert, CertificateProfile profile)
-            throws Exception {
+    /** RDN serialNumber (2.5.4.5) do DN, ou null se ausente. */
+    private static String dnSerialNumber(X509Certificate cert) {
+        org.bouncycastle.asn1.x500.X500Name dn = org.bouncycastle.asn1.x500.X500Name
+                .getInstance(cert.getSubjectX500Principal().getEncoded());
+        org.bouncycastle.asn1.x500.RDN[] rdns = dn.getRDNs(IcpBrasilOids.DN_SERIAL_NUMBER);
+        return rdns.length == 0 ? null : rdns[0].getFirst().getValue().toString();
+    }
+
+    private void assertCommonProfile(X509Certificate cert, CertificateProfile profile,
+            String expectedPolicyOid) throws Exception {
         // keyUsage crítica com DS+NR+KE (leiaute legado; permitidos na nova geração)
         assertTrue(cert.getCriticalExtensionOIDs().contains("2.5.29.15"));
         boolean[] keyUsage = cert.getKeyUsage();
@@ -164,6 +172,9 @@ class CertificateGoldenTest extends IntegrationTestBase {
         DistributionPointName first = points.getDistributionPoints()[0].getDistributionPoint();
         String firstUrl = GeneralNames.getInstance(first.getName()).getNames()[0].getName().toString();
         assertEquals(base + "/crl/tenzen-ca.crl", firstUrl);
+        DistributionPointName second = points.getDistributionPoints()[1].getDistributionPoint();
+        String secondUrl = GeneralNames.getInstance(second.getName()).getNames()[0].getName().toString();
+        assertEquals(base + "/crl2/tenzen-ca.crl", secondUrl, "as 2 URLs devem ser distintas");
 
         // AIA caIssuers -> p7b da cadeia
         byte[] aia = cert.getExtensionValue("1.3.6.1.5.5.7.1.1");
@@ -179,9 +190,9 @@ class CertificateGoldenTest extends IntegrationTestBase {
         assertNotNull(policies);
         CertificatePolicies certPolicies = CertificatePolicies.getInstance(
                 ASN1Primitive.fromByteArray(ASN1OctetString.getInstance(policies).getOctets()));
+        // literal por perfil (não derivado do enum, para pegar erro no próprio enum)
         String policyId = certPolicies.getPolicyInformation()[0].getPolicyIdentifier().getId();
-        assertEquals("2.16.76.1.2." + profile.policyBranch() + "."
-                + PolicyOidResolver.FICTITIOUS_AC_NUMBER, policyId);
+        assertEquals(expectedPolicyOid, policyId);
 
         // titular assinado com SHA-256; chave RSA do tamanho do perfil
         assertEquals("SHA256withRSA", cert.getSigAlgName().replace("WITHRSA", "withRSA"));
@@ -193,9 +204,20 @@ class CertificateGoldenTest extends IntegrationTestBase {
     }
 
     @Test
+    void ecpfA1LegadoSaiFielAoLeiaute() throws Exception {
+        X509Certificate cert = issue(CertificateProfile.RFB_ECPF_A1, person());
+        assertCommonProfile(cert, CertificateProfile.RFB_ECPF_A1, "2.16.76.1.2.1.999");
+
+        String subject = cert.getSubjectX500Principal().getName();
+        assertTrue(subject.contains("CN=JOAO DA SILVA:01672780838"), subject);
+        assertTrue(subject.contains("OU=RFB e-CPF A1"), subject);
+        assertEquals(51, otherNameValue(cert, "2.16.76.1.3.1").length);
+    }
+
+    @Test
     void ecpfA3LegadoSaiFielAoLeiaute() throws Exception {
         X509Certificate cert = issue(CertificateProfile.RFB_ECPF_A3, person());
-        assertCommonProfile(cert, CertificateProfile.RFB_ECPF_A3);
+        assertCommonProfile(cert, CertificateProfile.RFB_ECPF_A3, "2.16.76.1.2.3.999");
 
         String subject = cert.getSubjectX500Principal().getName();
         assertTrue(subject.contains("CN=JOAO DA SILVA:01672780838"), subject);
@@ -215,7 +237,7 @@ class CertificateGoldenTest extends IntegrationTestBase {
     @Test
     void ecnpjA1LegadoSaiFielAoLeiaute() throws Exception {
         X509Certificate cert = issue(CertificateProfile.RFB_ECNPJ_A1, company());
-        assertCommonProfile(cert, CertificateProfile.RFB_ECNPJ_A1);
+        assertCommonProfile(cert, CertificateProfile.RFB_ECNPJ_A1, "2.16.76.1.2.1.999");
 
         String subject = cert.getSubjectX500Principal().getName();
         assertTrue(subject.contains("CN=CASA LIQUIDACAO:99999999000191"), subject);
@@ -231,27 +253,53 @@ class CertificateGoldenTest extends IntegrationTestBase {
     }
 
     @Test
-    void novaGeracaoPfUsaSerialNumberEOrgaoUfEm10() throws Exception {
-        X509Certificate cert = issue(CertificateProfile.NG_PF_A3, person());
-        assertCommonProfile(cert, CertificateProfile.NG_PF_A3);
+    void ecnpjA3LegadoSaiFielAoLeiaute() throws Exception {
+        X509Certificate cert = issue(CertificateProfile.RFB_ECNPJ_A3, company());
+        assertCommonProfile(cert, CertificateProfile.RFB_ECNPJ_A3, "2.16.76.1.2.3.999");
 
         String subject = cert.getSubjectX500Principal().getName();
-        assertTrue(subject.contains("2.5.4.5=#") || subject.contains("SERIALNUMBER=")
-                || subject.contains("serialNumber="), subject);
+        assertTrue(subject.contains("CN=CASA LIQUIDACAO:99999999000191"), subject);
+        assertTrue(subject.contains("OU=RFB e-CNPJ A3"), subject);
+        assertEquals(55, otherNameValue(cert, "2.16.76.1.3.4").length);
+    }
+
+    @Test
+    void novaGeracaoPfUsaSerialNumberEOrgaoUfEm10() throws Exception {
+        X509Certificate cert = issue(CertificateProfile.NG_PF_A3, person());
+        assertCommonProfile(cert, CertificateProfile.NG_PF_A3, "2.16.76.1.2.3.999");
+
+        assertEquals("01672780838", dnSerialNumber(cert),
+                "CPF vai no serialNumber (2.5.4.5) da nova geração");
         assertEquals(55, otherNameValue(cert, "2.16.76.1.3.1").length,
                 "nova geração usa órgão/UF em 10 posições: total 55");
     }
 
     @Test
-    void seloEletronicoSeSEmiteComPolicy201() throws Exception {
-        X509Certificate cert = issue(CertificateProfile.NG_PJ_SE_S, company());
-        assertCommonProfile(cert, CertificateProfile.NG_PJ_SE_S);
+    void novaGeracaoPfA4SaiCompletaComRsa4096() throws Exception {
+        X509Certificate cert = issue(CertificateProfile.NG_PF_A4, person());
+        assertCommonProfile(cert, CertificateProfile.NG_PF_A4, "2.16.76.1.2.4.999");
+
+        assertEquals(4096, ((RSAPublicKey) cert.getPublicKey()).getModulus().bitLength());
+        assertEquals("01672780838", dnSerialNumber(cert));
+        assertEquals(55, otherNameValue(cert, "2.16.76.1.3.1").length);
     }
 
     @Test
-    void a4UsaChaveRsa4096() throws Exception {
-        X509Certificate cert = issue(CertificateProfile.NG_PF_A4, person());
-        assertEquals(4096, ((RSAPublicKey) cert.getPublicKey()).getModulus().bitLength());
+    void seloEletronicoSeSEmiteComPolicy201() throws Exception {
+        X509Certificate cert = issue(CertificateProfile.NG_PJ_SE_S, company());
+        assertCommonProfile(cert, CertificateProfile.NG_PJ_SE_S, "2.16.76.1.2.201.999");
+
+        assertEquals("99999999000191", dnSerialNumber(cert),
+                "CNPJ vai no serialNumber (2.5.4.5) do Selo Eletrônico");
+    }
+
+    @Test
+    void seloEletronicoSeHEmiteComPolicy202() throws Exception {
+        X509Certificate cert = issue(CertificateProfile.NG_PJ_SE_H, company());
+        assertCommonProfile(cert, CertificateProfile.NG_PJ_SE_H, "2.16.76.1.2.202.999");
+
+        assertEquals("99999999000191", dnSerialNumber(cert));
+        assertEquals(14, otherNameValue(cert, "2.16.76.1.3.3").length);
     }
 
     @Test

@@ -46,6 +46,16 @@ class CpfCnpjTest {
     }
 
     @Test
+    void cnpjAlfanumericoConhecidoEValido() {
+        // vetor fixo (exemplo divulgado pelo Serpro para a IN RFB 2.229/2024):
+        // 12ABC34501DE -> valores ASCII-48 [1,2,17,18,19,3,4,5,0,1,20,21] -> DVs 3 e 5
+        assertTrue(Cnpj.isValid("12ABC34501DE35"));
+        assertTrue(Cnpj.isValid("12.ABC.345/01DE-35"));
+        assertFalse(Cnpj.isValid("12ABC34501DE36"), "segundo DV trocado");
+        assertFalse(Cnpj.isValid("12ABC34501DE45"), "primeiro DV trocado");
+    }
+
+    @Test
     void cnpjAlfanumericoCalculaDvSobreAscii48() {
         // regra IN RFB 2.229/2024: valor = código ASCII - 48 (A=17 ... Z=42)
         Random random = new Random(7);

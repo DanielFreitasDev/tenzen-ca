@@ -37,7 +37,7 @@ public class IssueController {
     public String issue(@Valid @ModelAttribute("form") IssueForm form, BindingResult binding,
             RedirectAttributes redirect, Model model) {
         if (!binding.hasErrors()) {
-            form.validate(binding);
+            form.validate(binding, true);
         }
         if (binding.hasErrors()) {
             return "issue";

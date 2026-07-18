@@ -45,7 +45,7 @@
                 <div data-success-detail>
                     <dt class="text-muted-foreground">Documento</dt>
                     <dd class="technical mt-0.5"
-                        th:text="${cert.document.isBlank() ? 'não informado' : cert.document}">000</dd>
+                        th:text="${#strings.isEmpty(cert.document) ? 'não informado' : cert.document}">000</dd>
                 </div>
                 <div data-success-detail>
                     <dt class="text-muted-foreground">Número de série</dt>

@@ -28,6 +28,8 @@ function enhanceCombobox(select) {
   if (labelEl) {
     labelEl.id = labelEl.id || `${id}-label`;
     button.setAttribute('aria-labelledby', `${labelEl.id} ${id}-btn`);
+    // clicar no rótulo deve focar o controle visível, não o select oculto
+    labelEl.htmlFor = button.id;
   }
   button.className =
     'input flex items-center justify-between gap-2 text-left cursor-pointer';

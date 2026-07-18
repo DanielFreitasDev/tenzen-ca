@@ -34,11 +34,7 @@ public class CsrController {
     @GetMapping("/csr")
     public String form(Model model) {
         if (!model.containsAttribute("form")) {
-            IssueForm form = new IssueForm();
-            // sem .p12 no fluxo CSR: os campos de senha não aparecem nem são validados
-            form.setSenha("sem-p12");
-            form.setSenhaConfirma("sem-p12");
-            model.addAttribute("form", form);
+            model.addAttribute("form", new IssueForm());
         }
         return "csr";
     }
@@ -48,10 +44,9 @@ public class CsrController {
             @RequestParam(name = "csrFile", required = false) MultipartFile csrFile,
             @Valid @ModelAttribute("form") IssueForm form, BindingResult binding,
             RedirectAttributes redirect, Model model) {
-        form.setSenha("sem-p12");
-        form.setSenhaConfirma("sem-p12");
         if (!binding.hasErrors()) {
-            form.validate(binding);
+            // sem .p12 no fluxo CSR: a senha não existe no formulário nem é exigida
+            form.validate(binding, false);
         }
 
         String pem = csrPem;

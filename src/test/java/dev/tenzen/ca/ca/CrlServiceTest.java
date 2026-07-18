@@ -3,6 +3,7 @@ package dev.tenzen.ca.ca;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.tenzen.ca.IntegrationTestBase;
@@ -11,10 +12,21 @@ import dev.tenzen.ca.cert.SubjectData;
 import dev.tenzen.ca.issuance.IssuanceService;
 import dev.tenzen.ca.issuance.IssuedCertificate;
 import java.math.BigInteger;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.junit.jupiter.api.Test;
@@ -89,5 +101,43 @@ class CrlServiceTest extends IntegrationTestBase {
         X509CRL crl = new org.bouncycastle.cert.jcajce.JcaX509CRLConverter().getCRL(holder);
         crl.verify(caMaterial.rootCertificate().getPublicKey());
         assertNull(crl.getRevokedCertificates());
+    }
+
+    @Test
+    void pkixComRevogacaoReprovaRevogadoEAprovaValido() throws Exception {
+        IssuanceService.IssuedResult valido = issuanceService.issueWithGeneratedKey(
+                CertificateProfile.RFB_ECPF_A1,
+                SubjectData.builder().name("Valido No Pkix").cpf("12345678909").build(),
+                IssuanceService.ValiditySpec.profileYears(1),
+                "senha123".toCharArray(), null);
+        IssuanceService.IssuedResult revogado = issuanceService.issueWithGeneratedKey(
+                CertificateProfile.RFB_ECPF_A1,
+                SubjectData.builder().name("Revogado No Pkix").cpf("12345678909").build(),
+                IssuanceService.ValiditySpec.profileYears(1),
+                "senha123".toCharArray(), null);
+        issuanceService.revoke(revogado.record().getId(), "superseded");
+
+        validateWithRevocation(valido.certificate());
+
+        CertPathValidatorException failure = assertThrows(CertPathValidatorException.class,
+                () -> validateWithRevocation(revogado.certificate()));
+        assertEquals(CertPathValidatorException.BasicReason.REVOKED, failure.getReason(),
+                "o caminho do revogado deve reprovar exatamente por revogação");
+    }
+
+    /** PKIX completo com revocação por CRL (a da Intermediária cobre o titular; a da Raiz, a Intermediária). */
+    private void validateWithRevocation(X509Certificate leaf) throws Exception {
+        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+        CertPath path = factory.generateCertPath(
+                List.of(leaf, caMaterial.issuingCertificate()));
+        PKIXParameters params = new PKIXParameters(
+                Set.of(new TrustAnchor(caMaterial.rootCertificate(), null)));
+        params.setRevocationEnabled(true);
+        X509CRL rootCrl = new org.bouncycastle.cert.jcajce.JcaX509CRLConverter()
+                .getCRL(new org.bouncycastle.cert.X509CRLHolder(crlService.rootCrl()));
+        params.addCertStore(CertStore.getInstance("Collection",
+                new CollectionCertStoreParameters(
+                        List.of(crlService.caCrlParsed(), rootCrl))));
+        CertPathValidator.getInstance("PKIX").validate(path, params);
     }
 }

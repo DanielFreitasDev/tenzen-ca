@@ -54,9 +54,7 @@ public class IssueForm {
     private Integer validadeAnos = 1;
     private Integer validadeDias = 365;
 
-    /* exportação */
-    @NotBlank(message = "Defina a senha do .p12")
-    @Size(min = 4, max = 64, message = "A senha deve ter entre 4 e 64 caracteres")
+    /* exportação — validada em validate(), só no fluxo com .p12 (o CSR não tem senha) */
     private String senha;
 
     private String senhaConfirma;
@@ -72,8 +70,36 @@ public class IssueForm {
         return "laboratorio".equals(validadeModo);
     }
 
-    /** Regras dependentes do perfil, aplicadas após as anotações. */
-    public void validate(Errors errors) {
+    private CertificateProfile profileOrDefault() {
+        try {
+            return profile();
+        } catch (IllegalArgumentException e) {
+            return CertificateProfile.RFB_ECPF_A1;
+        }
+    }
+
+    /* Auxiliares de renderização: estado inicial correto dos templates antes de o JS rodar. */
+
+    public boolean pj() {
+        return profileOrDefault().holder() == CertificateProfile.Holder.PJ;
+    }
+
+    public boolean legacyPf() {
+        CertificateProfile profile = profileOrDefault();
+        return profile.legacy() && profile.holder() == CertificateProfile.Holder.PF;
+    }
+
+    public int maxYears() {
+        return profileOrDefault().maxValidityYears();
+    }
+
+    /**
+     * Regras dependentes do perfil, aplicadas após as anotações.
+     *
+     * @param requirePassword true no fluxo com .p12; false no fluxo CSR, que não
+     *                        exporta chave e não tem campos de senha no formulário
+     */
+    public void validate(Errors errors, boolean requirePassword) {
         CertificateProfile profile;
         try {
             profile = profile();
@@ -133,8 +159,16 @@ public class IssueForm {
                     "Este perfil permite de 1 a " + profile.maxValidityYears() + " anos");
         }
 
-        if (senha != null && !senha.equals(senhaConfirma)) {
-            errors.rejectValue("senhaConfirma", "senha.diferente", "As senhas não conferem");
+        if (requirePassword) {
+            if (isBlank(senha)) {
+                errors.rejectValue("senha", "obrigatorio", "Defina a senha do .p12");
+            } else if (senha.length() < 4 || senha.length() > 64) {
+                errors.rejectValue("senha", "senha.tamanho",
+                        "A senha deve ter entre 4 e 64 caracteres");
+            }
+            if (senha != null && !senha.equals(senhaConfirma)) {
+                errors.rejectValue("senhaConfirma", "senha.diferente", "As senhas não conferem");
+            }
         }
     }
 
