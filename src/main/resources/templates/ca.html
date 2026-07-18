@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: page('Cadeia de confiança', ~{:: section})}">
+<body>
+<section>
+    <h1 class="text-2xl font-bold tracking-tight">Cadeia de confiança</h1>
+    <p class="mt-2 text-muted-foreground max-w-2xl">
+        A cadeia é gerada na primeira execução e fica em <span class="technical text-sm">~/.tenzen-ca</span>.
+        Instale a Raiz apenas em um truststore isolado do seu ambiente de teste, nunca no
+        truststore global do sistema.
+    </p>
+
+    <div class="mt-6 grid gap-4 lg:grid-cols-2" data-motion-stagger>
+        <div class="card p-5">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="font-semibold">AC Raiz de Testes Tenzen v1</h2>
+                <span class="badge badge-muted">RSA-4096 · SHA-512</span>
+            </div>
+            <dl class="mt-3 space-y-2 text-sm">
+                <div>
+                    <dt class="text-muted-foreground">Titular</dt>
+                    <dd class="technical text-xs mt-0.5 break-all" th:text="${rootSubject}">CN=...</dd>
+                </div>
+                <div>
+                    <dt class="text-muted-foreground">Fingerprint SHA-256</dt>
+                    <dd class="technical text-xs mt-0.5 break-all" th:text="${fingerprint}">AA:BB</dd>
+                </div>
+                <div>
+                    <dt class="text-muted-foreground">Válida até</dt>
+                    <dd class="technical text-xs mt-0.5"
+                        th:text="${#dates.format(rootNotAfter, 'dd/MM/yyyy')}">2046</dd>
+                </div>
+            </dl>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a th:href="@{/ca/tenzen-root.crt}" class="btn btn-primary h-9">Baixar .crt (DER)</a>
+                <a th:href="@{/ca/tenzen-root.pem}" class="btn btn-outline h-9">Baixar PEM</a>
+            </div>
+        </div>
+
+        <div class="card p-5">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="font-semibold">AC Tenzen de Testes v1 (Intermediária)</h2>
+                <span class="badge badge-muted">pathLen=0</span>
+            </div>
+            <dl class="mt-3 space-y-2 text-sm">
+                <div>
+                    <dt class="text-muted-foreground">Titular</dt>
+                    <dd class="technical text-xs mt-0.5 break-all" th:text="${issuingSubject}">CN=...</dd>
+                </div>
+                <div>
+                    <dt class="text-muted-foreground">Válida até</dt>
+                    <dd class="technical text-xs mt-0.5"
+                        th:text="${#dates.format(issuingNotAfter, 'dd/MM/yyyy')}">2036</dd>
+                </div>
+            </dl>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a th:href="@{/ca/tenzen-issuing.pem}" class="btn btn-outline h-9">Baixar PEM</a>
+                <a th:href="@{/ca/tenzen-chain.pem}" class="btn btn-outline h-9">Cadeia PEM</a>
+                <a th:href="@{/ca/tenzen-chain.p7b}" class="btn btn-outline h-9">Cadeia .p7b</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-5 mt-4">
+        <h2 class="font-semibold">Confiar na cadeia (truststore isolado)</h2>
+        <p class="mt-1.5 text-sm text-muted-foreground">
+            Exemplos que confinam a confiança ao ambiente de teste:
+        </p>
+        <div class="mt-3 space-y-3 text-sm">
+            <div>
+                <p class="font-medium mb-1">Java (JKS/PKCS12 dedicado)</p>
+                <pre class="technical text-xs bg-muted rounded p-3 overflow-x-auto">keytool -importcert -alias tenzen-root -file tenzen-root.crt \
+  -keystore truststore-teste.p12 -storetype PKCS12 -storepass changeit -noprompt</pre>
+            </div>
+            <div>
+                <p class="font-medium mb-1">OpenSSL / curl (por chamada)</p>
+                <pre class="technical text-xs bg-muted rounded p-3 overflow-x-auto">openssl verify -CAfile tenzen-chain.pem certificado.pem
+curl --cacert tenzen-chain.pem https://servico-de-teste.local</pre>
+            </div>
+            <div>
+                <p class="font-medium mb-1">Node.js (por processo)</p>
+                <pre class="technical text-xs bg-muted rounded p-3 overflow-x-auto">NODE_EXTRA_CA_CERTS=$PWD/tenzen-chain.pem node app.js</pre>
+            </div>
+        </div>
+        <p class="mt-4 text-xs text-warning bg-warning-soft rounded p-3">
+            Esta cadeia existe apenas para teste. Não instale a Raiz no truststore do sistema
+            operacional nem em máquinas de produção.
+        </p>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "tenzen-ca-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build de frontend do Tenzen CA (Tailwind v4 + esbuild)",
+  "scripts": {
+    "build": "npm run build:assets && npm run build:css && npm run build:js",
+    "build:assets": "node scripts/copy-assets.mjs",
+    "build:css": "tailwindcss -i src/main/css/app.css -o src/main/resources/static/css/app.css --minify",
+    "build:js": "esbuild src/main/js/main.js --bundle --minify --format=iife --target=es2022 --outfile=src/main/resources/static/js/app.js",
+    "watch:css": "tailwindcss -i src/main/css/app.css -o src/main/resources/static/css/app.css --watch",
+    "watch:js": "esbuild src/main/js/main.js --bundle --format=iife --target=es2022 --outfile=src/main/resources/static/js/app.js --watch"
+  },
+  "devDependencies": {
+    "@fontsource/ibm-plex-mono": "5.2.7",
+    "@fontsource/ibm-plex-sans": "5.2.8",
+    "@tailwindcss/cli": "4.3.3",
+    "animejs": "4.5.0",
+    "esbuild": "0.28.1",
+    "tailwindcss": "4.3.3"
+  }
+}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: page('Assinar CSR', ~{:: section})}">
+<body>
+<section>
+    <h1 class="text-2xl font-bold tracking-tight">Assinar CSR (PKCS#10)</h1>
+    <p class="mt-2 text-muted-foreground max-w-2xl">
+        Fluxo de AC real: você gera a chave do seu lado (inclusive em HSM), envia só o
+        pedido de certificado, e recebe o certificado assinado. A chave privada nunca
+        chega aqui, então não existe download de .p12 neste fluxo.
+    </p>
+
+    <div class="card p-4 mt-4 text-sm">
+        <p class="font-medium mb-1.5">Gerando um CSR de teste com OpenSSL</p>
+        <pre class="technical text-xs bg-muted rounded p-3 overflow-x-auto">openssl req -new -newkey rsa:2048 -nodes -keyout chave.pem -out pedido.csr -subj "/CN=teste"</pre>
+        <p class="field-hint mt-1.5">
+            O DN e o SAN do certificado saem dos campos abaixo, não do subject do CSR
+            (só a chave pública é aproveitada).
+        </p>
+    </div>
+
+    <form th:action="@{/csr}" th:object="${form}" method="post" enctype="multipart/form-data"
+          class="mt-6 space-y-6" id="issue-form" novalidate>
+
+        <div th:if="${#fields.hasGlobalErrors()}"
+             class="rounded border border-destructive bg-destructive-soft text-destructive text-sm p-3">
+            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}">Erro</p>
+        </div>
+
+        <fieldset class="card p-5">
+            <legend class="font-semibold px-1">Pedido de certificado</legend>
+            <div class="space-y-3">
+                <div>
+                    <label class="field-label" for="csrPem">CSR em PEM</label>
+                    <textarea class="input technical h-40 py-2 resize-y" id="csrPem" name="csrPem"
+                              spellcheck="false"
+                              placeholder="-----BEGIN CERTIFICATE REQUEST-----"
+                              th:text="${csrPem}"></textarea>
+                </div>
+                <div>
+                    <label class="field-label" for="csrFile">ou envie o arquivo .csr</label>
+                    <input class="block text-sm text-muted-foreground file:btn file:btn-outline file:h-9 file:mr-3"
+                           id="csrFile" name="csrFile" type="file" accept=".csr,.pem,.txt">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="card p-5">
+            <legend class="font-semibold px-1">Perfil</legend>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup"
+                 aria-label="Perfil do certificado">
+                <label th:each="p : ${profiles}" class="relative cursor-pointer">
+                    <input type="radio" th:field="*{profileId}" th:value="${p.id()}"
+                           class="peer sr-only" data-profile-radio
+                           th:attr="data-holder=${p.holder().name()},data-legacy=${p.legacy()},data-max-years=${p.maxValidityYears()},data-label=${p.label()}">
+                    <span class="flex flex-col items-start gap-0.5 rounded border border-border bg-card px-3 py-2.5 text-sm
+                                 peer-checked:border-primary peer-checked:bg-accent-soft peer-checked:text-primary
+                                 peer-focus-visible:outline-2 peer-focus-visible:outline-ring hover:border-ring transition-colors">
+                        <span class="font-medium" th:text="${p.label()}">Perfil</span>
+                        <span class="text-xs text-muted-foreground"
+                              th:text="${p.holder().name() == 'PF' ? 'Pessoa física' : 'Pessoa jurídica'}">PF</span>
+                    </span>
+                </label>
+            </div>
+            <p class="mt-3 text-xs text-muted-foreground" data-a3-note hidden>
+                A3, A4 e SE-H: estrutura em arquivo, sem simulação de token/HSM.
+            </p>
+        </fieldset>
+
+        <fieldset class="card p-5" data-fieldset="pf">
+            <legend class="font-semibold px-1">Titular (pessoa física)</legend>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label class="field-label" for="nome">Nome completo</label>
+                    <input class="input" id="nome" th:field="*{nome}" autocomplete="off">
+                    <p class="field-error" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="cpf">CPF</label>
+                    <input class="input technical" id="cpf" th:field="*{cpf}" data-mask="cpf"
+                           inputmode="numeric" autocomplete="off" placeholder="000.000.000-00">
+                    <p class="field-error" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="nascimento">Data de nascimento</label>
+                    <input class="input technical" id="nascimento" th:field="*{nascimento}"
+                           inputmode="numeric" autocomplete="off" placeholder="dd/mm/aaaa">
+                    <p class="field-error" th:if="${#fields.hasErrors('nascimento')}"
+                       th:errors="*{nascimento}">e</p>
+                </div>
+            </div>
+            <p class="field-hint mt-3">
+                Documentos opcionais (RG, NIS, título) ficam zerados no SAN neste fluxo;
+                use a emissão completa se precisar deles.
+            </p>
+        </fieldset>
+
+        <fieldset class="card p-5" data-fieldset="pj" hidden>
+            <legend class="font-semibold px-1">Titular (pessoa jurídica)</legend>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label class="field-label" for="razaoSocial">Razão social</label>
+                    <input class="input" id="razaoSocial" th:field="*{razaoSocial}" autocomplete="off">
+                    <p class="field-error" th:if="${#fields.hasErrors('razaoSocial')}"
+                       th:errors="*{razaoSocial}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="cnpjField">CNPJ</label>
+                    <input class="input technical" id="cnpjField" th:field="*{cnpj}" data-mask="cnpj"
+                           autocomplete="off" placeholder="00.000.000/0000-00" spellcheck="false"
+                           autocapitalize="characters">
+                    <p class="field-error" th:if="${#fields.hasErrors('cnpj')}" th:errors="*{cnpj}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="responsavelNome">Responsável</label>
+                    <input class="input" id="responsavelNome" th:field="*{responsavelNome}"
+                           autocomplete="off">
+                    <p class="field-error" th:if="${#fields.hasErrors('responsavelNome')}"
+                       th:errors="*{responsavelNome}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="responsavelCpf">CPF do responsável</label>
+                    <input class="input technical" id="responsavelCpf" th:field="*{responsavelCpf}"
+                           data-mask="cpf" inputmode="numeric" autocomplete="off">
+                    <p class="field-error" th:if="${#fields.hasErrors('responsavelCpf')}"
+                       th:errors="*{responsavelCpf}">e</p>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="card p-5">
+            <legend class="font-semibold px-1">Registro e contato</legend>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label class="field-label" for="email">E-mail</label>
+                    <input class="input" id="email" th:field="*{email}" autocomplete="off">
+                    <p class="field-error" th:if="${#fields.hasErrors('email')}"
+                       th:errors="*{email}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="cidade">Cidade</label>
+                    <input class="input" id="cidade" th:field="*{cidade}" autocomplete="off">
+                    <p class="field-hint" data-city-hint-pf hidden></p>
+                    <p class="field-hint" data-city-hint-pj hidden>Obrigatória no e-CNPJ (DN, campo L).</p>
+                    <p class="field-error" th:if="${#fields.hasErrors('cidade')}"
+                       th:errors="*{cidade}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="uf">UF</label>
+                    <input class="input" id="uf" th:field="*{uf}" maxlength="2" autocomplete="off">
+                    <p class="field-error" th:if="${#fields.hasErrors('uf')}" th:errors="*{uf}">e</p>
+                </div>
+                <div>
+                    <label class="field-label" for="validationType">Método de validação</label>
+                    <select class="input" id="validationType" th:field="*{validationType}"
+                            data-combobox>
+                        <option value="videoconferencia">videoconferencia</option>
+                        <option value="presencial">presencial</option>
+                        <option value="certificado digital">certificado digital</option>
+                    </select>
+                </div>
+                <div data-legacy-pf>
+                    <label class="field-label" for="domain">Domínio (OU⑤ do e-CPF)</label>
+                    <input class="input" id="domain" th:field="*{domain}" autocomplete="off"
+                           placeholder="deixe vazio para EM BRANCO">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="card p-5">
+            <legend class="font-semibold px-1">Validade</legend>
+            <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Modo de validade">
+                <label class="cursor-pointer">
+                    <input type="radio" th:field="*{validadeModo}" value="perfil"
+                           class="peer sr-only" data-validade-modo>
+                    <span class="btn btn-outline h-9 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-accent-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring">
+                        Conforme o perfil
+                    </span>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" th:field="*{validadeModo}" value="laboratorio"
+                           class="peer sr-only" data-validade-modo>
+                    <span class="btn btn-outline h-9 peer-checked:border-warning peer-checked:text-warning peer-checked:bg-warning-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring">
+                        Laboratório
+                    </span>
+                </label>
+            </div>
+            <div class="mt-4" data-validade-panel="perfil">
+                <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Anos de validade">
+                    <label th:each="anos : ${#numbers.sequence(1, 6)}" class="cursor-pointer"
+                           th:attr="data-anos-option=${anos}">
+                        <input type="radio" th:field="*{validadeAnos}" th:value="${anos}"
+                               class="peer sr-only">
+                        <span class="btn btn-outline h-9 min-w-20 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-accent-soft peer-focus-visible:outline-2 peer-focus-visible:outline-ring"
+                              th:text="${anos == 1 ? '1 ano' : anos + ' anos'}">1 ano</span>
+                    </label>
+                </div>
+                <p class="field-hint" data-validade-teto></p>
+                <p class="field-error" th:if="${#fields.hasErrors('validadeAnos')}"
+                   th:errors="*{validadeAnos}">e</p>
+            </div>
+            <div class="mt-4" data-validade-panel="laboratorio" hidden>
+                <label class="field-label" for="validadeDias">Dias de validade</label>
+                <input class="input technical max-w-40" id="validadeDias" th:field="*{validadeDias}"
+                       type="number" min="1" max="7300">
+                <p class="field-hint">
+                    <span class="badge badge-warning">fora dos tetos normativos</span>
+                </p>
+                <p class="field-error" th:if="${#fields.hasErrors('validadeDias')}"
+                   th:errors="*{validadeDias}">e</p>
+            </div>
+        </fieldset>
+
+        <div class="flex items-center justify-end gap-3">
+            <a th:href="@{/}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Assinar CSR</button>
+        </div>
+    </form>
+</section>
+</body>
+</html>

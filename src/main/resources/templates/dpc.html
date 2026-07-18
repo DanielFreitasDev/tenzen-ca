@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: page('DPC de teste', ~{:: section})}">
+<body>
+<section class="max-w-3xl">
+    <h1 class="text-2xl font-bold tracking-tight">Declaração de Práticas de Certificação (fictícia)</h1>
+    <p class="mt-2 text-muted-foreground">
+        Esta é a página apontada pelo qualificador CPS dos certificados emitidos pela
+        Tenzen CA. Ela existe para dar um destino real à URL, como numa AC de verdade.
+    </p>
+
+    <div class="card p-5 mt-6 space-y-4 text-sm leading-relaxed">
+        <div>
+            <h2 class="font-semibold">1. O que esta AC é</h2>
+            <p class="mt-1 text-muted-foreground">
+                A Tenzen CA é uma autoridade certificadora <strong class="font-medium text-foreground">simulada,
+                para desenvolvimento e teste</strong>. A cadeia (AC Raiz de Testes Tenzen v1 e
+                AC Tenzen de Testes v1) é gerada localmente na primeira execução e não tem
+                nenhum vínculo com a ICP-Brasil real.
+            </p>
+        </div>
+        <div>
+            <h2 class="font-semibold">2. O que os certificados valem</h2>
+            <p class="mt-1 text-muted-foreground">
+                Nada, fora do seu ambiente de teste. A estrutura (DN, OIDs 2.16.76.1.3.*,
+                extensões, CRL) segue os leiautes públicos da ICP-Brasil para que aplicações
+                consumidoras se comportem como em produção, mas nenhuma identidade é validada.
+            </p>
+        </div>
+        <div>
+            <h2 class="font-semibold">3. Políticas de certificado</h2>
+            <p class="mt-1 text-muted-foreground">
+                No modo default, os certificados carregam OIDs no formato
+                <span class="technical text-xs">2.16.76.1.2.&lt;tipo&gt;.999</span>, em que o número
+                de AC 999 é fictício e não foi atribuído pelo ITI. Alternativamente
+                (<span class="technical text-xs">app.ca.policy-mode=private-2.25</span>), usa-se um
+                arco privado derivado da própria Raiz.
+            </p>
+        </div>
+        <div>
+            <h2 class="font-semibold">4. Revogação</h2>
+            <p class="mt-1 text-muted-foreground">
+                Qualquer certificado pode ser revogado pelo histórico. A CRL é assinada pela
+                Intermediária, publicada em duas URLs
+                (<span class="technical text-xs">/crl/tenzen-ca.crl</span> e
+                <span class="technical text-xs">/crl2/tenzen-ca.crl</span>) com nextUpdate de 24 horas
+                e CRLNumber monotônico.
+            </p>
+        </div>
+        <div>
+            <h2 class="font-semibold">5. Dados pessoais</h2>
+            <p class="mt-1 text-muted-foreground">
+                Use dados fictícios. O gerador de dados aleatórios da página de emissão existe
+                exatamente para isso.
+            </p>
+        </div>
+    </div>
+</section>
+</body>
+</html>

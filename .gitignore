@@ -1,0 +1,6 @@
+target/
+node_modules/
+# gerados pelo build de frontend (npm run build)
+src/main/resources/static/css/app.css
+src/main/resources/static/js/app.js
+src/main/resources/static/fonts/

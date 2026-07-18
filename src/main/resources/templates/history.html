@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: page('Histórico', ~{:: section})}">
+<body>
+<section>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight">Histórico</h1>
+            <p class="mt-1 text-muted-foreground text-sm">
+                Tudo que esta AC de teste já emitiu. Revogar publica a CRL na hora.
+            </p>
+        </div>
+        <form th:action="@{/historico}" method="get" class="flex gap-2" role="search">
+            <label class="sr-only" for="q">Buscar por titular, documento ou serial</label>
+            <input class="input w-64" id="q" name="q" th:value="${query}"
+                   placeholder="titular, documento ou serial">
+            <button type="submit" class="btn btn-outline shrink-0">Buscar</button>
+        </form>
+    </div>
+
+    <div th:if="${certificates.isEmpty()}" class="card p-10 mt-6 text-center">
+        <p class="text-muted-foreground">
+            <span th:if="${query.isBlank()}">Nada emitido ainda.</span>
+            <span th:unless="${query.isBlank()}">Nada encontrado para essa busca.</span>
+        </p>
+        <a th:href="@{/emitir}" class="btn btn-primary mt-4">Emitir o primeiro</a>
+    </div>
+
+    <div th:unless="${certificates.isEmpty()}" class="card mt-6 overflow-x-auto">
+        <table class="w-full text-sm min-w-175">
+            <thead>
+            <tr class="border-b border-border text-left text-xs text-muted-foreground">
+                <th class="font-medium px-4 py-3">Titular</th>
+                <th class="font-medium px-4 py-3">Perfil</th>
+                <th class="font-medium px-4 py-3">Validade</th>
+                <th class="font-medium px-4 py-3">Status</th>
+                <th class="font-medium px-4 py-3 text-right">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${certificates}" class="border-b border-border last:border-0 align-top">
+                <td class="px-4 py-3">
+                    <a th:href="@{|/certificados/${c.id}|}"
+                       class="font-medium hover:text-primary" th:text="${c.subjectCn}">TITULAR</a>
+                    <p class="technical text-xs text-muted-foreground mt-0.5"
+                       th:text="${c.document}">000</p>
+                </td>
+                <td class="px-4 py-3">
+                    <span th:text="${profileLabels[c.profileId]}">RFB e-CPF A1</span>
+                    <p th:if="${c.labMode}" class="mt-0.5"><span class="badge badge-warning">laboratório</span></p>
+                    <p th:if="${c.source.name() == 'CSR'}" class="mt-0.5"><span class="badge badge-muted">CSR</span></p>
+                </td>
+                <td class="px-4 py-3 technical text-xs whitespace-nowrap">
+                    <span th:text="${@fmt.date(c.notBefore)}">01/01</span><br>
+                    <span th:text="${@fmt.date(c.notAfter)}">01/01</span>
+                </td>
+                <td class="px-4 py-3">
+                    <span th:if="${c.status.name() == 'VALID'}" class="badge badge-success">válido</span>
+                    <span th:if="${c.status.name() == 'REVOKED'}" class="badge badge-destructive">revogado</span>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                        <a th:if="${c.hasPrivateKey()}"
+                           th:href="@{|/certificados/${c.id}/certificado.p12|}"
+                           class="btn btn-outline h-8 text-xs">.p12</a>
+                        <a th:href="@{|/certificados/${c.id}/certificado.pem|}"
+                           class="btn btn-outline h-8 text-xs">PEM</a>
+                        <details th:if="${c.status.name() == 'VALID'}" class="relative">
+                            <summary class="btn btn-ghost h-8 text-xs text-destructive list-none cursor-pointer">
+                                Revogar
+                            </summary>
+                            <form th:action="@{|/certificados/${c.id}/revogar|}" method="post"
+                                  class="absolute right-0 z-10 mt-1 w-64 card p-3 shadow-lg space-y-2 text-left">
+                                <label class="field-label" th:for="|motivo-${c.id}|">Motivo</label>
+                                <select class="input h-9" th:id="|motivo-${c.id}|" name="motivo">
+                                    <option value="unspecified">não especificado</option>
+                                    <option value="keyCompromise">comprometimento de chave</option>
+                                    <option value="affiliationChanged">mudança de vínculo</option>
+                                    <option value="superseded">substituído</option>
+                                    <option value="cessationOfOperation">encerramento de uso</option>
+                                </select>
+                                <button type="submit" class="btn btn-destructive h-9 w-full">
+                                    Confirmar revogação
+                                </button>
+                            </form>
+                        </details>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>
