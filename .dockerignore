@@ -1,0 +1,22 @@
+# Mantem o contexto de build minimo — so o necessario para ./mvnw package.
+.git/
+.gitignore
+.env
+.env.example
+Dockerfile
+compose.yaml
+.dockerignore
+README.md
+docs/
+target/
+node_modules/
+
+# Artefatos de frontend gerados localmente; o build da imagem os regenera.
+src/main/resources/static/css/app.css
+src/main/resources/static/js/app.js
+src/main/resources/static/fonts/
+
+# IDEs
+.idea/
+.vscode/
+*.iml

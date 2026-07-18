@@ -1,0 +1,56 @@
+# Docker Compose (nome canonico: compose.yaml; a chave "version" e obsoleta).
+# Configuracao via .env — copie .env.example para .env antes do primeiro uso.
+name: tenzen-ca
+
+services:
+  app:
+    build:
+      context: .
+      # "default" = build normal em rede isolada. Em maquinas cuja internet sai
+      # por proxy em localhost, defina BUILD_NETWORK=host no .env (ver .env.example).
+      network: ${BUILD_NETWORK:-default}
+    image: tenzen-ca:local
+    restart: unless-stopped
+    init: true
+
+    # Endurecimento: raiz somente leitura (so /data e /tmp sao gravaveis),
+    # sem capabilities e sem escalada de privilegios.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+    # Default publica apenas em 127.0.0.1 do host, como a app fora do Docker.
+    # Para expor na rede, mude TENZEN_BIND no .env e ligue o basic-auth.
+    ports:
+      - "${TENZEN_BIND:-127.0.0.1}:${TENZEN_PORT:-8080}:8080"
+
+    environment:
+      TZ: ${TZ:-America/Fortaleza}
+      # URL base embutida nos certificados (CRL DP, AIA, CPS); precisa ser
+      # alcancavel pelos clientes que vao validar os certificados.
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      APP_CA_KEYSTORE_PASSWORD: "${APP_CA_KEYSTORE_PASSWORD:?defina APP_CA_KEYSTORE_PASSWORD no .env (gere com openssl rand -base64 24)}"
+      APP_CA_POLICY_MODE: ${APP_CA_POLICY_MODE:-icp-format}
+      APP_SECURITY_BASIC_AUTH_ENABLED: ${APP_SECURITY_BASIC_AUTH_ENABLED:-false}
+      APP_SECURITY_BASIC_AUTH_USERNAME: ${APP_SECURITY_BASIC_AUTH_USERNAME:-tenzen}
+      APP_SECURITY_BASIC_AUTH_PASSWORD: ${APP_SECURITY_BASIC_AUTH_PASSWORD:-}
+
+    # Keystores da AC (root.p12 / issuing.p12) + banco H2 do historico.
+    # Apagar este volume descarta a cadeia e recomeca do zero (docs no README).
+    volumes:
+      - ca-data:/data
+
+    # Limites opcionais de recursos (descomente se quiser conter a JVM;
+    # o heap segue o limite via -XX:MaxRAMPercentage=75 definido na imagem):
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2"
+    #       memory: 1g
+
+volumes:
+  ca-data:
