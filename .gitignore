@@ -6,3 +6,4 @@ node_modules/
 src/main/resources/static/css/app.css
 src/main/resources/static/js/app.js
 src/main/resources/static/fonts/
+.idea/
