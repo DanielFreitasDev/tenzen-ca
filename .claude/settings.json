@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in \"$CLAUDE_PROJECT_DIR\"/src/*.java) cd \"$CLAUDE_PROJECT_DIR\" && ./mvnw -q spotless:apply -DspotlessIdeHook=\"$f\" >/dev/null 2>&1;; esac; } || true",
+            "timeout": 60,
+            "statusMessage": "Formatando com Spotless..."
+          }
+        ]
+      }
+    ]
+  }
+}
