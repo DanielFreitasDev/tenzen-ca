@@ -40,14 +40,27 @@ public class RandomDataGenerator {
 
     private static final List<String> RG_ISSUERS = List.of("SSP", "PC", "DETRAN", "IFP");
 
-    private static final List<String> UFS = List.of(
-            "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT",
-            "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO");
-
-    private static final List<String> CITIES = List.of(
-            "Fortaleza", "Sao Paulo", "Rio de Janeiro", "Belo Horizonte", "Recife", "Salvador",
-            "Curitiba", "Porto Alegre", "Manaus", "Belem", "Goiania", "Natal", "Teresina",
-            "Joao Pessoa", "Maceio", "Aracaju", "Campinas", "Sobral", "Juazeiro do Norte");
+    // cada município acompanha sua UF real, para nunca sortear combinações como "Goiania/CE"
+    private static final List<CityUf> CITIES = List.of(
+            new CityUf("Fortaleza", "CE"),
+            new CityUf("Sao Paulo", "SP"),
+            new CityUf("Rio de Janeiro", "RJ"),
+            new CityUf("Belo Horizonte", "MG"),
+            new CityUf("Recife", "PE"),
+            new CityUf("Salvador", "BA"),
+            new CityUf("Curitiba", "PR"),
+            new CityUf("Porto Alegre", "RS"),
+            new CityUf("Manaus", "AM"),
+            new CityUf("Belem", "PA"),
+            new CityUf("Goiania", "GO"),
+            new CityUf("Natal", "RN"),
+            new CityUf("Teresina", "PI"),
+            new CityUf("Joao Pessoa", "PB"),
+            new CityUf("Maceio", "AL"),
+            new CityUf("Aracaju", "SE"),
+            new CityUf("Campinas", "SP"),
+            new CityUf("Sobral", "CE"),
+            new CityUf("Juazeiro do Norte", "CE"));
 
     private final RandomGenerator random = new SecureRandom();
 
@@ -68,19 +81,20 @@ public class RandomDataGenerator {
         String name = first + " " + middle + " " + last;
         LocalDate birth = LocalDate.of(1955 + random.nextInt(50), 1 + random.nextInt(12),
                 1 + random.nextInt(28));
-        String uf = pick(UFS);
+        CityUf cityUf = pick(CITIES);
         return new PersonData(
                 name,
                 Cpf.generate(random),
                 birth,
                 digits(9),
-                pick(RG_ISSUERS) + uf,
+                pick(RG_ISSUERS) + cityUf.uf(),
                 digits(11),
                 digits(12),
                 digits(3),
                 digits(4),
-                pick(CITIES),
-                uf,
+                digits(12),
+                cityUf.city(),
+                cityUf.uf(),
                 email(name));
     }
 
@@ -91,8 +105,8 @@ public class RandomDataGenerator {
         String cnpj = alphanumericCnpj
                 ? Cnpj.generateAlphanumeric(random)
                 : Cnpj.generateNumeric(random);
-        String city = pick(CITIES);
-        return new CompanyData(razao, cnpj, digits(12), city, pick(UFS),
+        CityUf cityUf = pick(CITIES);
+        return new CompanyData(razao, cnpj, digits(12), cityUf.city(), cityUf.uf(),
                 "contato@" + slug(core) + slug(segment.split(" ")[0]) + ".com.br");
     }
 
@@ -115,10 +129,14 @@ public class RandomDataGenerator {
 
     public record PersonData(String name, String cpf, LocalDate birthDate, String rg,
                              String rgIssuerUf, String nis, String voterId, String voterZone,
-                             String voterSection, String city, String uf, String email) {
+                             String voterSection, String ceiNit, String city, String uf,
+                             String email) {
     }
 
     public record CompanyData(String razaoSocial, String cnpj, String cei, String city,
                               String uf, String email) {
+    }
+
+    private record CityUf(String city, String uf) {
     }
 }

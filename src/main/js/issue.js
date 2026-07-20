@@ -84,7 +84,7 @@ const FIELD_MAP = {
     pessoa: {
         nome: 'nome', cpf: 'cpf', nascimento: 'nascimento', rg: 'rg',
         rgOrgaoUf: 'rgOrgaoUf', nis: 'nis', tituloEleitor: 'tituloEleitor',
-        tituloZona: 'tituloZona', tituloSecao: 'tituloSecao',
+        tituloZona: 'tituloZona', tituloSecao: 'tituloSecao', ceiNit: 'ceiNit',
         cidade: 'cidade', uf: 'uf', email: 'email',
     },
     empresa: {

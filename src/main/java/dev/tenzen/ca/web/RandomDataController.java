@@ -35,6 +35,7 @@ public class RandomDataController {
                 Map.entry("tituloEleitor", p.voterId()),
                 Map.entry("tituloZona", p.voterZone()),
                 Map.entry("tituloSecao", p.voterSection()),
+                Map.entry("ceiNit", p.ceiNit()),
                 Map.entry("cidade", p.city()),
                 Map.entry("uf", p.uf()),
                 Map.entry("email", p.email()));
