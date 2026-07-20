@@ -222,6 +222,16 @@
         aria-[invalid=true]:border-destructive;
     }
 
+    /* Campos que entram no certificado em maiúsculas: o JS transforma o valor;
+       o CSS garante a exibição imediata, sem alterar o placeholder. */
+    [data-uppercase] {
+        text-transform: uppercase;
+    }
+
+    [data-uppercase]::placeholder {
+        text-transform: none;
+    }
+
     .badge {
         @apply inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium;
     }

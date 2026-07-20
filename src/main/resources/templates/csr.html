@@ -75,7 +75,8 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                     <label class="field-label" for="nome">Nome completo</label>
-                    <input autocomplete="off" class="input" id="nome" th:field="*{nome}">
+                    <input autocomplete="off" class="input" data-uppercase id="nome"
+                           th:field="*{nome}">
                     <p class="field-error" th:errors="*{nome}" th:if="${#fields.hasErrors('nome')}">e</p>
                 </div>
                 <div>
@@ -86,8 +87,9 @@
                 </div>
                 <div>
                     <label class="field-label" for="nascimento">Data de nascimento</label>
-                    <input autocomplete="off" class="input technical" id="nascimento"
-                           inputmode="numeric" placeholder="dd/mm/aaaa" th:field="*{nascimento}">
+                    <input autocomplete="off" class="input technical" data-mask="data" id="nascimento"
+                           inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa"
+                           th:field="*{nascimento}">
                     <p class="field-error" th:errors="*{nascimento}"
                        th:if="${#fields.hasErrors('nascimento')}">e</p>
                 </div>
@@ -104,7 +106,8 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                     <label class="field-label" for="razaoSocial">Razão social</label>
-                    <input autocomplete="off" class="input" id="razaoSocial" th:field="*{razaoSocial}">
+                    <input autocomplete="off" class="input" data-uppercase id="razaoSocial"
+                           th:field="*{razaoSocial}">
                     <p class="field-error" th:errors="*{razaoSocial}"
                        th:if="${#fields.hasErrors('razaoSocial')}">e</p>
                 </div>
@@ -117,7 +120,7 @@
                 </div>
                 <div>
                     <label class="field-label" for="responsavelNome">Responsável</label>
-                    <input autocomplete="off" class="input" id="responsavelNome"
+                    <input autocomplete="off" class="input" data-uppercase id="responsavelNome"
                            th:field="*{responsavelNome}">
                     <p class="field-error" th:errors="*{responsavelNome}"
                        th:if="${#fields.hasErrors('responsavelNome')}">e</p>
@@ -143,7 +146,8 @@
                 </div>
                 <div>
                     <label class="field-label" for="cidade">Cidade</label>
-                    <input autocomplete="off" class="input" id="cidade" th:field="*{cidade}">
+                    <input autocomplete="off" class="input" data-uppercase id="cidade"
+                           th:field="*{cidade}">
                     <p class="field-hint" data-city-hint-pf hidden></p>
                     <p class="field-hint" data-city-hint-pj hidden>Obrigatória no e-CNPJ (DN, campo L).</p>
                     <p class="field-error" th:errors="*{cidade}"
@@ -151,7 +155,8 @@
                 </div>
                 <div>
                     <label class="field-label" for="uf">UF</label>
-                    <input autocomplete="off" class="input" id="uf" maxlength="2" th:field="*{uf}">
+                    <input autocomplete="off" class="input" data-uppercase id="uf" maxlength="2"
+                           th:field="*{uf}">
                     <p class="field-error" th:errors="*{uf}" th:if="${#fields.hasErrors('uf')}">e</p>
                 </div>
                 <div>
@@ -165,8 +170,8 @@
                 </div>
                 <div data-legacy-pf th:hidden="${!form.legacyPf()}">
                     <label class="field-label" for="domain">Domínio (OU⑤ do e-CPF)</label>
-                    <input autocomplete="off" class="input" id="domain" placeholder="deixe vazio para EM BRANCO"
-                           th:field="*{domain}">
+                    <input autocomplete="off" class="input" data-uppercase id="domain"
+                           placeholder="deixe vazio para EM BRANCO" th:field="*{domain}">
                 </div>
             </div>
         </fieldset>

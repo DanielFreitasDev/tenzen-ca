@@ -5,6 +5,17 @@ function reduced() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+// Ao fim da animação, solta a camada de composição: will-change/transform
+// residuais mantêm o elemento rasterizado como textura e deixam o texto
+// embaçado (sobretudo em telas com escala fracionária).
+function settle(elements) {
+    for (const el of elements) {
+        el.classList.remove('motion-item');
+        el.style.removeProperty('opacity');
+        el.style.removeProperty('transform');
+    }
+}
+
 // Entrada escalonada dos filhos de [data-motion-stagger]
 function staggerEntrances() {
     for (const container of document.querySelectorAll('[data-motion-stagger]')) {
@@ -17,6 +28,7 @@ function staggerEntrances() {
             duration: 420,
             delay: stagger(45),
             ease: 'outQuad',
+            onComplete: () => settle(items),
         });
     }
 }
@@ -31,6 +43,7 @@ function successReveal() {
         scale: [0.97, 1],
         duration: 380,
         ease: 'outQuad',
+        onComplete: () => settle([card]),
     });
     if (check) {
         animate(svg.createDrawable(check), {
@@ -48,6 +61,7 @@ function successReveal() {
             duration: 360,
             delay: stagger(40, {start: 320}),
             ease: 'outQuad',
+            onComplete: () => settle([...details]),
         });
     }
 }
@@ -72,12 +86,14 @@ export function swapFieldsets(hide, show) {
         ease: 'inQuad',
         onComplete: () => {
             hide.hidden = true;
+            settle([hide]);
             show.hidden = false;
             animate(show, {
                 opacity: [0, 1],
                 translateY: [6, 0],
                 duration: 220,
                 ease: 'outQuad',
+                onComplete: () => settle([show]),
             });
         },
     });

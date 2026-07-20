@@ -1,4 +1,4 @@
-// Máscaras e dígitos verificadores de CPF/CNPJ.
+// Máscaras (CPF/CNPJ/data), dígitos verificadores e maiúsculas automáticas.
 // CNPJ aceita alfanumérico nas 12 primeiras posições (IN RFB 2.229/2024):
 // DV numérico, módulo 11 sobre (código ASCII - 48). Espelha a validação do servidor.
 
@@ -27,6 +27,18 @@ export function formatCnpj(chars) {
     if (chars.length > 5) out += '.' + chars.slice(5, 8);
     if (chars.length > 8) out += '/' + chars.slice(8, 12);
     if (chars.length > 12) out += '-' + chars.slice(12, 14);
+    return out;
+}
+
+export function dateStrip(value) {
+    return value.replace(/\D/g, '').slice(0, 8);
+}
+
+// dd/mm/aaaa, mesmo formato que o servidor espera (IssueForm.BR_DATE)
+export function formatDate(digits) {
+    let out = digits.slice(0, 2);
+    if (digits.length > 2) out += '/' + digits.slice(2, 4);
+    if (digits.length > 4) out += '/' + digits.slice(4, 8);
     return out;
 }
 
@@ -69,11 +81,31 @@ function attach(input, strip, format) {
     input.addEventListener('blur', reformat);
 }
 
+// Maiúsculas de verdade no valor (não só visual), preservando o cursor.
+// O 'change' cobre preenchimentos programáticos (dados fictícios).
+function attachUppercase(input) {
+    const upper = () => {
+        const next = input.value.toUpperCase();
+        if (next === input.value) return;
+        const {selectionStart, selectionEnd} = input;
+        input.value = next;
+        input.setSelectionRange(selectionStart, selectionEnd);
+    };
+    input.addEventListener('input', upper);
+    input.addEventListener('change', upper);
+}
+
 export function initMasks(root = document) {
     for (const el of root.querySelectorAll('[data-mask="cpf"]')) {
         attach(el, cpfStrip, formatCpf);
     }
     for (const el of root.querySelectorAll('[data-mask="cnpj"]')) {
         attach(el, cnpjStrip, formatCnpj);
+    }
+    for (const el of root.querySelectorAll('[data-mask="data"]')) {
+        attach(el, dateStrip, formatDate);
+    }
+    for (const el of root.querySelectorAll('[data-uppercase]')) {
+        attachUppercase(el);
     }
 }
