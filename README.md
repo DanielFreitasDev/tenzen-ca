@@ -83,6 +83,7 @@ Propriedades de `application.properties`, sobreponíveis por variável de ambien
 
 ```bash
 ./mvnw verify            # golden tests ASN.1 dos 8 perfis, PKIX com revogação, CRL, PKCS#12, MockMvc
+scripts/verify-e2e.sh    # autocontido: builda o jar, sobe instância efêmera e roda o verify-cert.sh
 scripts/verify-cert.sh   # com a app no ar: emite, inspeciona e revoga via OpenSSL
 ```
 

@@ -1,51 +1,33 @@
 ---
 name: verify-e2e
-description: Verificação ponta a ponta da emissão de certificados via OpenSSL (scripts/verify-cert.sh) — builda o jar, sobe uma instância efêmera e valida emissão, DN/extensões, SAN, revogação, CRLs e AIA. Use após mudanças em ca/, cert/, issuance/ ou nos fluxos web de emissão/revogação, ou quando o usuário pedir verificação ponta a ponta. Aceita opcionalmente uma BASE URL como argumento para testar uma instância já no ar.
+description: Verificação ponta a ponta da emissão de certificados via OpenSSL (scripts/verify-e2e.sh) — builda o jar, sobe uma instância efêmera e valida emissão, DN/extensões, SAN, revogação, CRLs e AIA. Use após mudanças em ca/, cert/, issuance/ ou nos fluxos web de emissão/revogação, ou quando o usuário pedir verificação ponta a ponta. Aceita opcionalmente uma BASE URL como argumento para testar uma instância já no ar.
 ---
 
-Verificação ponta a ponta do Tenzen CA com `scripts/verify-cert.sh` (exige `openssl` e `curl` no PATH).
+Verificação ponta a ponta do Tenzen CA (exige `openssl`, `curl` e `java` no PATH). Os cheques em si — emissão dos 4 perfis, cadeia, DN/extensões, SAN, revogação, CRLs, AIA — vivem em `scripts/verify-cert.sh`; o que muda entre os modos é contra qual instância ele roda. Decida primeiro: se `$ARGUMENTS` contém uma URL, use o modo alternativo contra a instância já no ar; caso contrário, use o modo padrão efêmero.
 
-## Modo 1 — instância já no ar (somente se o usuário passou uma URL)
+## Modo padrão — instância efêmera
 
-Se `$ARGUMENTS` contém uma URL (ex.: `http://localhost:8080`), rode direto contra ela — atenção: isso grava emissões e uma revogação no histórico daquela instância:
+`scripts/verify-e2e.sh` faz o ciclo completo sozinho: builda o jar (frontend pulado), acha uma porta livre a partir da 8085, sobe a app com data-dir descartável (não toca no `~/.tenzen-ca` do usuário), aguarda o boot e roda o `verify-cert.sh`, derrubando e limpando tudo ao final — inclusive em falha.
+
+```bash
+scripts/verify-e2e.sh
+```
+
+- Leva vários minutos (build + boot com geração de cadeia RSA-4096 + verificação): rode em background e acompanhe, ou use timeout de 10 min.
+- `--skip-build` reaproveita o jar de `target/` — só use se o jar já reflete o código editado; senão você estará verificando código velho.
+- Em falha, o script imprime as últimas linhas do log da app e **mantém** o diretório de trabalho (`/tmp/tenzen-e2e.*`) para inspeção — consulte o `app.log` de lá se o motivo não estiver óbvio e remova o diretório ao encerrar a investigação.
+
+## Modo alternativo — instância já no ar (somente se o usuário passou uma URL)
+
+Se `$ARGUMENTS` contém uma URL (ex.: `http://localhost:8080`), rode direto contra ela:
 
 ```bash
 BASE=$ARGUMENTS scripts/verify-cert.sh
 ```
 
-Atenção: esse modo verifica o código que está **rodando** naquela instância, não necessariamente o código editado.
-
-## Modo 2 — instância efêmera (padrão)
-
-Verifica o código atual sem tocar no `~/.tenzen-ca` do usuário.
-
-1. Builde o jar (frontend pulado — o script só usa curl/openssl, não precisa de assets):
-
-   ```bash
-   ./mvnw -DskipTests -Dskip.installnodenpm -Dskip.npm package
-   ```
-
-2. Escolha uma porta livre (padrão 8085; se ocupada, tente 8086...) e suba a app com data-dir temporário, em background:
-
-   ```bash
-   DATA_DIR=$(mktemp -d /tmp/tenzen-e2e.XXXXXX)
-   java -jar target/tenzen-ca-*.jar \
-     --server.port=8085 \
-     --app.data-dir="$DATA_DIR" \
-     --app.base-url=http://localhost:8085
-   ```
-
-3. Aguarde o boot: faça polling de `http://localhost:8085/crl/tenzen-ca.crl` até responder 200 (timeout ~120 s — o primeiro boot gera uma cadeia RSA-4096 real).
-
-4. Rode o script e capture a saída completa:
-
-   ```bash
-   BASE=http://localhost:8085 scripts/verify-cert.sh
-   ```
-
-5. Sempre finalize (mesmo em caso de falha): mate o processo java da instância efêmera e remova `$DATA_DIR`.
+Dois cuidados: isso grava emissões e uma revogação no histórico daquela instância, e verifica o código que está **rodando** nela — não necessariamente o código editado.
 
 ## Relatório
 
 - Sucesso: o script termina com "Tudo verificado com sucesso." — resuma as seções verificadas (`== ... ==`).
-- Falha: a primeira linha `FALHOU: ...` indica o cheque quebrado; reporte-a junto com a seção em que ocorreu e investigue a causa no código antes de propor correção. Lembre que `docs/standards.md` é a fonte normativa do conteúdo dos certificados.
+- Falha: a primeira linha `FALHOU: ...` indica o cheque quebrado; reporte-a junto com a seção em que ocorreu e investigue a causa no código antes de propor correção. Falhas de build ou boot vêm do próprio `verify-e2e.sh` (o log da app diz o porquê); falhas de conteúdo de certificado devem ser conferidas contra `docs/standards.md`, a fonte normativa.

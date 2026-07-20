@@ -12,7 +12,7 @@ Autoridade Certificadora **de testes** estilo ICP-Brasil (e-CPF, e-CNPJ, nova ge
 - Suíte completa: `./mvnw verify` — lenta (os testes geram cadeias RSA-4096 reais). Obrigatória antes de qualquer commit.
 - Teste único/targeted: `./mvnw test -Dtest=NomeDaClasse -Dskip.installnodenpm -Dskip.npm` — as flags pulam o build de frontend, que roda na fase `generate-resources` de qualquer build normal (e exige rede no primeiro build).
 - Dev: `./mvnw spring-boot:run` (+ `npm run watch:css` / `npm run watch:js` em terminais separados).
-- Verificação ponta a ponta (emissão, extensões, revogação, CRL via OpenSSL): skill `/verify-e2e`, que usa `scripts/verify-cert.sh`.
+- Verificação ponta a ponta (emissão, extensões, revogação, CRL via OpenSSL): skill `/verify-e2e`, que usa `scripts/verify-e2e.sh` (ciclo autocontido com instância efêmera; os cheques ficam em `scripts/verify-cert.sh`).
 - Formatação: `./mvnw spotless:apply` (imports e whitespace; aplicada automaticamente via hook após edições).
 
 ## Armadilhas

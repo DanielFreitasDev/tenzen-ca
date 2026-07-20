@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Cross-check OpenSSL de ponta a ponta contra uma instância local do Tenzen CA.
 # Sobe a app antes (mvn spring-boot:run ou java -jar) e rode: scripts/verify-cert.sh
+# Para o ciclo completo autocontido (build + instância efêmera), use scripts/verify-e2e.sh.
 set -euo pipefail
 
 BASE="${BASE:-http://localhost:8080}"
